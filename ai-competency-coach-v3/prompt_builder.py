@@ -24,6 +24,7 @@ JUDGE_SYSTEM_PROMPT = """
 5. 사용자가 말하지 않은 행동을 가정하지 않는다.
 6. feedback에는 잘한 점과 보완점을 모두 포함한다.
 7. 한국어로 평가한다.
+8. 반드시 JSON만 반환한다. 마크다운 코드블록은 사용하지 않는다.
 """
 
 def build_fewshot_prompt(question_id: str, answer: str) -> str:
@@ -77,8 +78,26 @@ def build_fewshot_prompt(question_id: str, answer: str) -> str:
         "new_answer_to_evaluate": answer
     }
 
+    evidence_ids = [x["id"] for x in operational["evidence"]]
+
+    output_format = {
+        "question_id": q["question_id"],
+        "competency_id": cid,
+        "score": "0~3 정수",
+        "evidence": {
+            evidence_id: "absent | partial | clear"
+            for evidence_id in evidence_ids
+        },
+        "reason": "채점 근거를 한국어로 작성",
+        "feedback": "잘한 점과 보완할 점을 한국어로 작성",
+        "next_step": "다음 답변에서 바로 적용할 행동 한 가지",
+        "confidence": "0.0~1.0 숫자"
+    }
+
     return (
         JUDGE_SYSTEM_PROMPT
         + "\n\n아래 자료에서 source_framework의 criterion을 가장 우선하여 평가하라.\n"
         + json.dumps(payload, ensure_ascii=False, indent=2)
+        + "\n\n반드시 아래 JSON 구조와 동일한 키로만 반환하라.\n"
+        + json.dumps(output_format, ensure_ascii=False, indent=2)
     )
