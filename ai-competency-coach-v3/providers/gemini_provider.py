@@ -28,13 +28,16 @@ class GeminiProvider:
                 system_instruction=JUDGE_SYSTEM_PROMPT,
                 temperature=0.1,
                 response_mime_type="application/json",
-                response_schema=EvaluationResult,
+                # 중요:
+                # response_schema를 넣지 않는다.
+                # 기존 EvaluationResult의 evidence: Dict[...]가
+                # JSON Schema에서 additionalProperties를 만들고,
+                # 일부 Gemini Developer API 경로에서 이를 거부한다.
             ),
         )
 
-        parsed = getattr(response, "parsed", None)
-        if isinstance(parsed, EvaluationResult):
-            return parsed
-        if parsed is not None:
-            return EvaluationResult.model_validate(parsed)
+        if not response.text:
+            raise RuntimeError("Gemini가 빈 응답을 반환했습니다.")
+
         return EvaluationResult.model_validate_json(response.text)
+
