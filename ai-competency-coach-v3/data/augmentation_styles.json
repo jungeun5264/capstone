@@ -1,0 +1,150 @@
+{
+  "version": "2.0",
+  "purpose": "같은 역량 수준을 다양한 실제 언어 표현으로 확장하되, 점수와 evidence의 의미는 유지한다.",
+  "styles_by_score": {
+    "0": [
+      {
+        "id": "short_confident_wrong",
+        "description": "매우 짧고 확신에 찬 오답. 정답 키워드를 억지로 쓰지 않는다."
+      },
+      {
+        "id": "casual_wrong",
+        "description": "친구에게 말하듯 자연스러운 구어체 오답."
+      },
+      {
+        "id": "keyword_trap",
+        "description": "좋아 보이는 단어를 일부 쓰지만 실제 행동은 rubric 0점 수준인 함정 답변."
+      },
+      {
+        "id": "long_wrong",
+        "description": "길고 논리적으로 보이지만 핵심 판단은 잘못된 답변."
+      },
+      {
+        "id": "indirect_wrong",
+        "description": "직접 결론을 말하지 않고 간접적으로 잘못된 판단을 드러내는 답변."
+      },
+      {
+        "id": "typo_noisy_wrong",
+        "description": "맞춤법·띄어쓰기·축약이 약간 섞인 실제 사용자형 오답."
+      },
+      {
+        "id": "offtopic_mixed_wrong",
+        "description": "관련 없는 정보가 섞여 있지만 핵심 역량은 부족한 답변."
+      },
+      {
+        "id": "self_contradictory_wrong",
+        "description": "한 문장에서는 올바른 말을 하지만 실제 행동 계획은 그와 모순되는 답변."
+      }
+    ],
+    "1": [
+      {
+        "id": "short_partial",
+        "description": "핵심 요소 하나만 짧게 언급하는 부분 정답."
+      },
+      {
+        "id": "casual_partial",
+        "description": "자연스러운 구어체로 일부만 맞는 답변."
+      },
+      {
+        "id": "keyword_trap_partial",
+        "description": "고득점처럼 보이는 표현이 있으나 실제 evidence는 일부만 충족하는 답변."
+      },
+      {
+        "id": "hesitant_partial",
+        "description": "확신이 적고 머뭇거리며 일부 올바른 생각만 드러내는 답변."
+      },
+      {
+        "id": "long_partial",
+        "description": "길지만 핵심 evidence가 하나 이상 빠진 답변."
+      },
+      {
+        "id": "indirect_partial",
+        "description": "정답 문구 없이 간접적으로 일부 능력을 드러내는 답변."
+      },
+      {
+        "id": "typo_noisy_partial",
+        "description": "오탈자·축약이 조금 섞인 부분 정답."
+      },
+      {
+        "id": "self_contradictory_partial",
+        "description": "올바른 주장과 잘못된 행동이 섞여 최종적으로 낮은 수준에 머무는 답변."
+      }
+    ],
+    "2": [
+      {
+        "id": "short_mostly_correct",
+        "description": "짧지만 대부분 적절하고 한 요소가 약한 답변."
+      },
+      {
+        "id": "casual_mostly_correct",
+        "description": "일상적 구어체로 대부분 올바른 답변."
+      },
+      {
+        "id": "implicit_mostly_correct",
+        "description": "정답 키워드 없이 행동 묘사로 대부분의 역량을 드러내는 답변."
+      },
+      {
+        "id": "long_wandering",
+        "description": "장황하고 주변 설명이 많지만 핵심은 대체로 맞는 답변."
+      },
+      {
+        "id": "typo_noisy_mostly_correct",
+        "description": "오탈자·띄어쓰기 오류가 있어도 의미상 대부분 적절한 답변."
+      },
+      {
+        "id": "mixed_relevant_irrelevant",
+        "description": "관련 없는 내용이 섞였지만 핵심 행동은 대체로 맞는 답변."
+      },
+      {
+        "id": "hedged_mostly_correct",
+        "description": "조심스럽고 조건부 표현이 많지만 대부분 적절한 답변."
+      },
+      {
+        "id": "one_gap_hidden",
+        "description": "겉보기에는 훌륭하지만 rubric의 핵심 요소 하나가 은근히 빠진 경계 사례."
+      }
+    ],
+    "3": [
+      {
+        "id": "short_complete",
+        "description": "짧고 자연스럽지만 세부 evidence를 모두 충족하는 답변."
+      },
+      {
+        "id": "casual_complete",
+        "description": "친구에게 말하듯 자연스러운 구어체 완전 정답."
+      },
+      {
+        "id": "implicit_complete",
+        "description": "정답 문구를 쓰지 않고 행동 계획만으로 모든 evidence를 충족하는 답변."
+      },
+      {
+        "id": "long_nuanced",
+        "description": "세부 조건과 예외를 포함한 장문형 고득점 답변."
+      },
+      {
+        "id": "typo_noisy_complete",
+        "description": "오탈자·축약이 섞여도 의미상 완전한 답변."
+      },
+      {
+        "id": "natural_noncanonical",
+        "description": "모범답안과 전혀 다른 자연스러운 표현으로 같은 역량을 보이는 답변."
+      },
+      {
+        "id": "mixed_but_complete",
+        "description": "불필요한 설명이 섞여 있어도 핵심 evidence를 모두 충족하는 답변."
+      },
+      {
+        "id": "hedged_complete",
+        "description": "확정적 표현보다 조건부·신중한 표현을 쓰지만 모든 evidence를 충족하는 답변."
+      }
+    ]
+  },
+  "global_constraints": [
+    "anchor 문장을 그대로 복사하거나 단순 동의어 치환하지 않는다.",
+    "같은 문장 종결 표현을 반복하지 않는다.",
+    "답변 길이와 문체를 의도적으로 다양화한다.",
+    "사람이 실제로 쓸 법한 자연스러운 한국어를 사용한다.",
+    "표현이 달라도 target_score와 target_evidence의 의미는 유지한다.",
+    "정답처럼 보이는 키워드가 있다고 자동으로 고득점이 되지 않는 함정 사례를 포함한다."
+  ]
+}

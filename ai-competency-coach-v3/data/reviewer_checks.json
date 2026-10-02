@@ -1,0 +1,12 @@
+{
+  "purpose": "LLM quality filter only; final label is human decision.",
+  "warning": "Generator and reviewer LLM agreement is not ground truth.",
+  "checks": [
+    "Does the answer actually match target_score according to the rubric?",
+    "Does it preserve target_evidence semantically?",
+    "Is it more than a superficial paraphrase of the anchor?",
+    "Does the requested style genuinely appear?",
+    "Does the answer contain internal contradictions that change its score?",
+    "Would a human reader plausibly write this answer?"
+  ]
+}

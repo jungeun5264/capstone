@@ -1,0 +1,75 @@
+{
+  "version": "1.0",
+  "basis": {
+    "unesco": "UNESCO AI Competency Framework for Students (2024)",
+    "digcomp": "EU DigComp 3.0 (2025)",
+    "project_scope": "일반 이용자의 AI 이해와 활용 과정에 초점을 두며, AI 시스템 설계 영역은 분석 범위에서 제외한다."
+  },
+  "competencies": [
+    {
+      "id": "HC_AGENCY",
+      "domain": "인간 중심 관점",
+      "stage": "이해",
+      "name": "인간의 주도권",
+      "digcomp": [
+        "5.2 필요 파악과 디지털 기술 선택"
+      ],
+      "criterion": "AI가 결정을 대신하는 도구가 아니라는 점을 이해하고, 어떤 일에 AI를 사용할지 사람이 목적과 범위를 정한다."
+    },
+    {
+      "id": "HC_RESPONSIBILITY",
+      "domain": "인간 중심 관점",
+      "stage": "적용",
+      "name": "인간의 책임",
+      "digcomp": [
+        "1.2 정보 평가",
+        "5.2 필요 파악과 디지털 기술 선택"
+      ],
+      "criterion": "AI 답변을 그대로 채택하지 않고, 중요한 판단에서는 근거를 확인한 뒤 최종 선택과 책임을 사람이 맡는다."
+    },
+    {
+      "id": "ETH_PERSPECTIVE",
+      "domain": "AI 윤리",
+      "stage": "이해",
+      "name": "윤리적 관점",
+      "digcomp": [
+        "2.3 디지털 기술을 통한 시민 참여",
+        "4.3 웰빙 지원"
+      ],
+      "criterion": "AI 사용이 타인의 권리, 편향, 포용성에 영향을 줄 수 있음을 이해하고 문제 상황을 알아본다."
+    },
+    {
+      "id": "ETH_SAFE_USE",
+      "domain": "AI 윤리",
+      "stage": "적용",
+      "name": "안전하고 책임 있는 사용",
+      "digcomp": [
+        "4.2 개인정보와 사생활 보호",
+        "3.3 저작권과 라이선스(필요 시)"
+      ],
+      "criterion": "AI에 입력할 개인정보를 가려내고, 결과물을 사용하거나 공유할 때 개인정보·저작권 문제를 확인한다."
+    },
+    {
+      "id": "TECH_FOUNDATION",
+      "domain": "AI 기술과 활용",
+      "stage": "이해",
+      "name": "AI의 기초",
+      "digcomp": [
+        "1.2 정보 평가",
+        "5.2 필요 파악과 디지털 기술 선택"
+      ],
+      "criterion": "AI가 할 수 있는 일과 한계를 구별하고, 그럴듯한 답변에도 오류가 있을 수 있음을 이해한다."
+    },
+    {
+      "id": "TECH_USE",
+      "domain": "AI 기술과 활용",
+      "stage": "적용",
+      "name": "활용 능력",
+      "digcomp": [
+        "2.1 디지털 기술과의 상호작용",
+        "5.2 필요 파악과 디지털 기술 선택"
+      ],
+      "criterion": "목적에 맞는 AI 도구를 고르고, 필요한 맥락·조건을 담아 질문하며, 결과를 보고 질문이나 활용 방식을 조정한다."
+    }
+  ]
+}

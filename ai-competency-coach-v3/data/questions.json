@@ -1,0 +1,128 @@
+[
+  {
+    "question_id": "H1-01",
+    "competency_id": "HC_AGENCY",
+    "domain": "취업",
+    "scenario": "지원할 회사가 여러 곳이라 고민 중입니다. 친구가 AI에게 정보를 모두 주고 가장 좋은 회사 하나를 골라달라고 하자고 합니다.",
+    "question": "AI를 어떻게 활용하는 것이 좋다고 생각하나요? 이유도 설명해주세요."
+  },
+  {
+    "question_id": "H1-02",
+    "competency_id": "HC_AGENCY",
+    "domain": "학업",
+    "scenario": "자유주제 보고서를 써야 합니다. AI에게 좋은 점수를 받을 주제 하나와 보고서 방향을 모두 정해달라고 하려 합니다.",
+    "question": "AI를 어떤 방식으로 활용하면 좋을까요?"
+  },
+  {
+    "question_id": "H1-03",
+    "competency_id": "HC_AGENCY",
+    "domain": "일상",
+    "scenario": "새로운 도시로 이사할지 고민하며 AI에게 연봉, 가족 상황, 주거비를 알려주고 이사 여부를 결정해달라고 하려 합니다.",
+    "question": "이 상황에서 AI를 어떻게 활용하는 것이 적절할까요?"
+  },
+  {
+    "question_id": "H2-01",
+    "competency_id": "HC_RESPONSIBILITY",
+    "domain": "학업",
+    "scenario": "AI가 최근 청년 실업률을 구체적인 숫자로 자신 있게 제시했습니다.",
+    "question": "보고서에 사용하기 전에 어떻게 해야 하나요?"
+  },
+  {
+    "question_id": "H2-02",
+    "competency_id": "HC_RESPONSIBILITY",
+    "domain": "생활정보",
+    "scenario": "AI가 피로에 좋다며 특정 영양제와 복용량을 추천했습니다.",
+    "question": "이 답변을 어떻게 활용하는 것이 좋을까요?"
+  },
+  {
+    "question_id": "H2-03",
+    "competency_id": "HC_RESPONSIBILITY",
+    "domain": "업무",
+    "scenario": "AI가 기업 매출과 시장점유율이 포함된 발표용 표를 만들었습니다. 발표까지 시간이 얼마 남지 않았습니다.",
+    "question": "이 자료를 그대로 사용해도 될까요? 어떻게 행동하겠습니까?"
+  },
+  {
+    "question_id": "E1-01",
+    "competency_id": "ETH_PERSPECTIVE",
+    "domain": "채용",
+    "scenario": "회사가 과거 입사자 이력서와 합격 여부로 AI를 학습시켜 신규 지원자의 합격 가능성을 자동 평가하려 합니다.",
+    "question": "어떤 윤리적 문제가 생길 수 있을까요?"
+  },
+  {
+    "question_id": "E1-02",
+    "competency_id": "ETH_PERSPECTIVE",
+    "domain": "광고",
+    "scenario": "AI에게 성공한 CEO의 전형적인 모습을 생성하게 했더니 대부분 비슷한 성별·연령·외모의 이미지가 나왔습니다.",
+    "question": "이 결과를 그대로 광고에 사용하는 데 어떤 문제가 있을까요?"
+  },
+  {
+    "question_id": "E1-03",
+    "competency_id": "ETH_PERSPECTIVE",
+    "domain": "교육",
+    "scenario": "학교가 얼굴 움직임, 시선, 주변 소리를 분석해 의심 학생을 자동 표시하는 AI 시험감독 시스템을 도입하려 합니다.",
+    "question": "누가 불리해질 수 있고 무엇을 고려해야 할까요?"
+  },
+  {
+    "question_id": "E2-01",
+    "competency_id": "ETH_SAFE_USE",
+    "domain": "업무",
+    "scenario": "고객 문의를 AI로 요약하려 합니다. 원본에는 이름, 전화번호, 이메일과 문의 내용이 있습니다.",
+    "question": "AI 사용 전에 어떻게 처리해야 할까요?"
+  },
+  {
+    "question_id": "E2-02",
+    "competency_id": "ETH_SAFE_USE",
+    "domain": "업무",
+    "scenario": "외부 AI에 회의 녹취록을 올리려 합니다. 미공개 사업계획과 직원 이름이 포함돼 있습니다.",
+    "question": "무엇을 확인하고 어떻게 행동해야 할까요?"
+  },
+  {
+    "question_id": "E2-03",
+    "competency_id": "ETH_SAFE_USE",
+    "domain": "콘텐츠",
+    "scenario": "생성형 AI가 만든 이미지와 문구를 회사 홍보물과 SNS 광고에 사용하려 합니다.",
+    "question": "공개 전에 어떤 점을 확인해야 할까요?"
+  },
+  {
+    "question_id": "T1-01",
+    "competency_id": "TECH_FOUNDATION",
+    "domain": "정보검색",
+    "scenario": "AI가 역사적 사건을 매우 자연스럽게 설명하면서 책 제목과 저자까지 제시했습니다.",
+    "question": "구체적이고 자신감 있어 보이면 사실이라고 믿어도 될까요?"
+  },
+  {
+    "question_id": "T1-02",
+    "competency_id": "TECH_FOUNDATION",
+    "domain": "최신정보",
+    "scenario": "친구가 AI라면 오늘 발표된 정책도 항상 최신 정보를 정확히 알려줄 것이라고 말합니다.",
+    "question": "이 말에 대해 어떻게 생각하나요?"
+  },
+  {
+    "question_id": "T1-03",
+    "competency_id": "TECH_FOUNDATION",
+    "domain": "문서분석",
+    "scenario": "AI가 논문 PDF를 자연스럽게 요약했지만 표와 그래프 수치가 원문과 조금 다릅니다.",
+    "question": "이 상황을 어떻게 해석해야 하며 어떤 한계를 고려해야 할까요?"
+  },
+  {
+    "question_id": "T2-01",
+    "competency_id": "TECH_USE",
+    "domain": "여행",
+    "scenario": "3박 4일 여행 계획을 AI로 만들려고 합니다.",
+    "question": "어떤 도구를 선택하고 어떤 정보를 포함해 요청하며 첫 결과가 마음에 들지 않으면 어떻게 수정하겠습니까?"
+  },
+  {
+    "question_id": "T2-02",
+    "competency_id": "TECH_USE",
+    "domain": "학업",
+    "scenario": "논문을 읽고 5분 세미나 발표를 준비해야 합니다.",
+    "question": "AI에 어떤 정보를 제공하고 어떤 결과를 요청하며 첫 답변 이후 어떻게 개선하겠습니까?"
+  },
+  {
+    "question_id": "T2-03",
+    "competency_id": "TECH_USE",
+    "domain": "코딩",
+    "scenario": "Python 코드 실행 중 오류가 발생해 AI에게 도움을 받으려 합니다.",
+    "question": "어떤 도구를 선택하고 어떤 정보와 조건을 제공하며 첫 해결책이 실패하면 어떻게 하겠습니까?"
+  }
+]
