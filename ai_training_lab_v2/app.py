@@ -149,8 +149,18 @@ def sidebar():
 
 
 def header(back=False):
-    cols = st.columns([1, 5]) if back else [1]
+    cols = st.columns([1, 5]) if back else st.columns(1)
+
     with cols[0]:
+        st.markdown(
+            '<div class="q-top"><span class="q-logo">Q</span>'
+            '<span class="q-title">AI 역량 훈련</span></div>',
+            unsafe_allow_html=True
+        )
+
+    if back and st.button("← 훈련 목록"):
+        st.session_state.page = "library"
+        st.rerun()
         st.markdown('<div class="q-top"><span class="q-logo">Q</span><span class="q-title">AI 역량 훈련</span></div>', unsafe_allow_html=True)
     if back and st.button("← 훈련 목록"):
         st.session_state.page="library"; st.rerun()
