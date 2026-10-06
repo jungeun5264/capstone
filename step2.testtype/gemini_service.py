@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import time
 from typing import Any, Dict, List
 
 from google import genai
@@ -23,6 +24,48 @@ class TrainingPlan(BaseModel):
 
 def _client(api_key: str):
     return genai.Client(api_key=api_key)
+
+
+
+
+def _is_transient_error(exc: Exception) -> bool:
+    msg = str(exc).lower()
+    return any(token in msg for token in [
+        "503", "unavailable", "high demand", "resource_exhausted", "429", "temporarily"
+    ])
+
+
+def _generate_content_resilient(api_key: str, preferred_model: str, *, contents, config):
+    """Call only the requested Gemini model, retrying transient capacity errors.
+
+    No fallback model is used. If gemini-3.8-flash is busy, the app waits briefly
+    and retries the same model several times.
+    """
+    delays = (0, 2, 5, 10)
+    last_exc = None
+
+    for delay in delays:
+        if delay:
+            time.sleep(delay)
+
+        client = _client(api_key)
+        try:
+            response = client.models.generate_content(
+                model=preferred_model,
+                contents=contents,
+                config=config,
+            )
+            return response, preferred_model
+        except Exception as exc:
+            last_exc = exc
+            if not _is_transient_error(exc):
+                raise
+        finally:
+            client.close()
+
+    raise RuntimeError(
+        f"{preferred_model} 모델이 현재 혼잡하여 여러 번 재시도했지만 응답을 받지 못했습니다. 잠시 후 다시 시도해주세요. 원본 오류: {last_exc}"
+    )
 
 
 def _mission_text(mission: Dict[str, Any]) -> str:
@@ -49,22 +92,16 @@ def create_training_plan(api_key: str, model: str, mission: Dict[str, Any], atte
 - 현실적이고 짧게 작성하세요.
 - opening_message는 친절하지만 과제 해결법을 선제적으로 제시하지 마세요.
 """.strip()
-    # Keep the Client object alive for the entire synchronous request.
-    # Calling `_client(api_key).models...` on a temporary Client can allow
-    # the Client to be finalized/closed before the HTTP request completes.
-    client = _client(api_key)
-    try:
-        response = client.models.generate_content(
-            model=model,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=TrainingPlan,
-            ),
-        )
-        return json.loads(response.text)
-    finally:
-        client.close()
+    response, _used_model = _generate_content_resilient(
+        api_key,
+        model,
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            response_mime_type="application/json",
+            response_schema=TrainingPlan,
+        ),
+    )
+    return json.loads(response.text)
 
 
 def chat_reply(
@@ -96,16 +133,13 @@ def chat_reply(
 6. 최종 결정은 사용자 대신 단정하지 말고 선택 근거와 트레이드오프를 명확하게 제시하세요.
 7. 답변은 과도하게 길지 않게, 실제 협업 대화처럼 자연스러운 한국어로 작성하세요.
 """.strip()
-    client = _client(api_key)
-    try:
-        response = client.models.generate_content(
-            model=model,
-            contents=transcript,
-            config=types.GenerateContentConfig(system_instruction=system),
-        )
-        return response.text or ""
-    finally:
-        client.close()
+    response, _used_model = _generate_content_resilient(
+        api_key,
+        model,
+        contents=transcript,
+        config=types.GenerateContentConfig(system_instruction=system),
+    )
+    return response.text or ""
 
 
 def evaluate(
@@ -173,13 +207,10 @@ AI 활용 능력: 목적·맥락·조건을 전달하고 후속 대화로 결과
 아래 키 구조를 정확히 유지한 JSON만 출력하세요.
 {json.dumps(template, ensure_ascii=False)}
 """.strip()
-    client = _client(api_key)
-    try:
-        response = client.models.generate_content(
-            model=model,
-            contents=prompt,
-            config=types.GenerateContentConfig(response_mime_type="application/json"),
-        )
-        return json.loads(response.text)
-    finally:
-        client.close()
+    response, _used_model = _generate_content_resilient(
+        api_key,
+        model,
+        contents=prompt,
+        config=types.GenerateContentConfig(response_mime_type="application/json"),
+    )
+    return json.loads(response.text)
