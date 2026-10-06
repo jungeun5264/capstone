@@ -16,61 +16,121 @@ st.markdown(
     """
     <style>
     .block-container {
-        max-width: 860px;
-        padding-top: 1.8rem;
+        max-width: 920px;
+        padding-top: 1.2rem;
         padding-bottom: 3rem;
+    }
+
+    .hero {
+        border: 1px solid rgba(128,128,128,.20);
+        border-radius: 20px;
+        padding: 20px 22px;
+        margin-bottom: 14px;
+        background: rgba(128,128,128,.04);
+    }
+
+    .hero-kicker {
+        font-size: .83rem;
+        font-weight: 700;
+        color: #6b7280;
+        margin-bottom: 4px;
+        letter-spacing: .02em;
     }
 
     .app-title {
         font-size: 2rem;
         font-weight: 800;
-        letter-spacing: -0.03em;
-        margin-bottom: 0.2rem;
+        letter-spacing: -0.04em;
+        margin-bottom: 4px;
     }
 
     .app-subtitle {
         color: #6b7280;
-        margin-bottom: 1rem;
+        margin-bottom: 0;
     }
 
-    .progress-caption {
+    .progress-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 4px 0 6px 0;
         color: #6b7280;
-        font-size: 0.9rem;
-        margin-top: -0.4rem;
-        margin-bottom: 1rem;
+        font-size: .9rem;
+    }
+
+    .current-card {
+        border: 1px solid rgba(128,128,128,.22);
+        border-radius: 18px;
+        padding: 18px 20px;
+        margin: 12px 0 14px 0;
+        background: rgba(128,128,128,.025);
+    }
+
+    .current-label {
+        font-size: .82rem;
+        font-weight: 800;
+        color: #6b7280;
+        margin-bottom: 8px;
+    }
+
+    .mission-card {
+        border: 1px solid rgba(128, 128, 128, 0.20);
+        border-radius: 16px;
+        padding: 16px 18px;
+        margin: 8px 0 14px 0;
+        background: rgba(128,128,128,.025);
+    }
+
+    .score-card {
+        border: 1px solid rgba(128, 128, 128, 0.20);
+        border-radius: 20px;
+        padding: 20px;
+        margin: 10px 0 18px 0;
+        background: rgba(128,128,128,.025);
+    }
+
+    .result-title {
+        font-size: 1.65rem;
+        font-weight: 800;
+        margin-bottom: .35rem;
+        letter-spacing: -0.03em;
+    }
+
+    .score-number {
+        font-size: 1.6rem;
+        font-weight: 800;
+        margin-bottom: 2px;
+    }
+
+    .score-label {
+        color: #6b7280;
+        font-size: .86rem;
+        margin-bottom: 8px;
     }
 
     div.stButton > button {
         width: 100%;
         text-align: left;
-        border-radius: 12px;
-        min-height: 48px;
+        border-radius: 14px;
+        min-height: 60px;
         white-space: normal;
+        padding: 12px 14px;
     }
 
-    .mission-card {
-        border: 1px solid rgba(128, 128, 128, 0.28);
-        border-radius: 16px;
-        padding: 16px 18px;
-        margin: 8px 0 14px 0;
+    div[data-testid="stMetric"] {
+        border: 1px solid rgba(128,128,128,.18);
+        border-radius: 14px;
+        padding: 12px 14px;
+        background: rgba(128,128,128,.02);
     }
 
-    .score-card {
-        border: 1px solid rgba(128, 128, 128, 0.28);
-        border-radius: 16px;
-        padding: 18px;
-        margin: 8px 0 16px 0;
+    div[data-testid="stExpander"] {
+        border-radius: 14px;
     }
 
     .small-note {
         color: #6b7280;
         font-size: 0.9rem;
-    }
-
-    .result-title {
-        font-size: 1.5rem;
-        font-weight: 800;
-        margin-bottom: 0.4rem;
     }
     </style>
     """,
@@ -376,10 +436,28 @@ def scenario_number(stage):
 
 
 def render_chat():
-    for msg in st.session_state.messages:
-        avatar = "🤖" if msg["role"] == "assistant" else "🙂"
-        with st.chat_message(msg["role"], avatar=avatar):
-            st.markdown(msg["content"])
+    messages = st.session_state.messages
+    if not messages:
+        return
+
+    current = messages[-1]
+    previous = messages[:-1]
+
+    if previous:
+        with st.expander("이전 대화 보기", expanded=False):
+            for msg in previous:
+                avatar = "🤖" if msg["role"] == "assistant" else "🙂"
+                with st.chat_message(msg["role"], avatar=avatar):
+                    st.markdown(msg["content"])
+
+    st.markdown(
+        '<div class="current-card"><div class="current-label">AI COACH</div>',
+        unsafe_allow_html=True,
+    )
+    avatar = "🤖" if current["role"] == "assistant" else "🙂"
+    with st.chat_message(current["role"], avatar=avatar):
+        st.markdown(current["content"])
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 def reset_all():
@@ -400,25 +478,38 @@ def reset_all():
 # =========================================================
 # 4. 상단
 # =========================================================
-st.markdown('<div class="app-title">AI 활용 사전진단</div>', unsafe_allow_html=True)
+if st.session_state.stage == 0:
+    n = 0
+    progress = 0.0
+    status_left = "시작 전"
+    status_right = "약 5~8분"
+elif st.session_state.stage < 12:
+    n = scenario_number(st.session_state.stage)
+    progress = n / 7
+    status_left = f"상황 {n} / 7"
+    status_right = f"{int(progress * 100)}% 진행"
+else:
+    n = 7
+    progress = 1.0
+    status_left = "진단 완료"
+    status_right = "100%"
+
 st.markdown(
-    '<div class="app-subtitle">짧은 상황을 해결하며 나의 AI 활용 방식을 확인해보세요.</div>',
+    """
+    <div class="hero">
+        <div class="hero-kicker">AI LITERACY CHECK</div>
+        <div class="app-title">AI 활용 사전진단</div>
+        <div class="app-subtitle">짧은 상황을 해결하며 나의 AI 활용 방식을 확인해보세요.</div>
+    </div>
+    """,
     unsafe_allow_html=True,
 )
 
-if st.session_state.stage == 0:
-    st.progress(0.0)
-    st.markdown('<div class="progress-caption">시작 전 · 약 5~8분</div>', unsafe_allow_html=True)
-elif st.session_state.stage < 12:
-    n = scenario_number(st.session_state.stage)
-    st.progress(n / 7)
-    st.markdown(
-        f'<div class="progress-caption">상황 {n} / 7</div>',
-        unsafe_allow_html=True,
-    )
-else:
-    st.progress(1.0)
-    st.markdown('<div class="progress-caption">진단 완료</div>', unsafe_allow_html=True)
+st.markdown(
+    f'<div class="progress-row"><span>{status_left}</span><span>{status_right}</span></div>',
+    unsafe_allow_html=True,
+)
+st.progress(progress)
 
 render_chat()
 
@@ -465,20 +556,23 @@ elif st.session_state.stage == 1:
         ("다른 학생들이 많이 선택하는 발표 주제가 무엇인지 물어본다.", 1.0),
     ]
 
-    for idx, (label, score) in enumerate(shuffled_once("agency", options)):
-        if st.button(label, key=f"agency_{idx}"):
-            save_choice("agency_choice", label, "agency", score)
-            add_message(
-                "assistant",
-                (
-                    "### 상황 2\n"
-                    "발표를 준비하던 중 AI가 이런 정보를 알려줬습니다.\n\n"
-                    "> **“2025년 조사에 따르면 대학생의 82.4%가 생성형 AI를 매일 사용합니다. "
-                    "이 조사는 UNESCO가 실시했습니다.”**\n\n"
-                    "발표 내용에 잘 맞아 보입니다. **다음으로 무엇을 하시겠어요?**"
-                ),
-            )
-            set_stage(2)
+    ordered = shuffled_once("agency", options)
+    cols = st.columns(2)
+    for idx, (label, score) in enumerate(ordered):
+        with cols[idx % 2]:
+            if st.button(label, key=f"agency_{idx}", use_container_width=True):
+                save_choice("agency_choice", label, "agency", score)
+                add_message(
+                    "assistant",
+                    (
+                        "### 상황 2\n"
+                        "발표를 준비하던 중 AI가 이런 정보를 알려줬습니다.\n\n"
+                        "> **“2025년 조사에 따르면 대학생의 82.4%가 생성형 AI를 매일 사용합니다. "
+                        "이 조사는 UNESCO가 실시했습니다.”**\n\n"
+                        "발표 내용에 잘 맞아 보입니다. **다음으로 무엇을 하시겠어요?**"
+                    ),
+                )
+                set_stage(2)
 
 # ---------------------------------------------------------
 # Stage 2: 인간의 책임 - 행동 선택
@@ -491,15 +585,18 @@ elif st.session_state.stage == 2:
         ("다른 AI에게 같은 내용을 물어보고 답이 같은지 비교한다.", 0.75),
     ]
 
-    for idx, (label, score) in enumerate(shuffled_once("responsibility", options)):
-        if st.button(label, key=f"resp_{idx}"):
-            save_choice("responsibility_choice", label)
-            st.session_state.answers["responsibility_base"] = score
-            add_message(
-                "assistant",
-                "좋아요. **확인한다면 어떤 점을 가장 확인하고 싶은지** 짧게 적어주세요.",
-            )
-            set_stage(3)
+    ordered = shuffled_once("responsibility", options)
+    cols = st.columns(2)
+    for idx, (label, score) in enumerate(ordered):
+        with cols[idx % 2]:
+            if st.button(label, key=f"resp_{idx}", use_container_width=True):
+                save_choice("responsibility_choice", label)
+                st.session_state.answers["responsibility_base"] = score
+                add_message(
+                    "assistant",
+                    "좋아요. **확인한다면 어떤 점을 가장 확인하고 싶은지** 짧게 적어주세요.",
+                )
+                set_stage(3)
 
 # ---------------------------------------------------------
 # Stage 3: 인간의 책임 - 이유
@@ -538,15 +635,18 @@ elif st.session_state.stage == 4:
         ("AI 평가를 도입한 뒤 최종 합격률이 얼마나 변했는지 확인한다.", 0.5),
     ]
 
-    for idx, (label, score) in enumerate(shuffled_once("ethics", options)):
-        if st.button(label, key=f"ethics_{idx}"):
-            save_choice("ethics_choice", label)
-            st.session_state.answers["ethics_base"] = score
-            add_message(
-                "assistant",
-                "그 자료나 기준을 확인해서 **어떤 문제가 있는지 보고 싶은가요?** 짧게 적어주세요.",
-            )
-            set_stage(5)
+    ordered = shuffled_once("ethics", options)
+    cols = st.columns(2)
+    for idx, (label, score) in enumerate(ordered):
+        with cols[idx % 2]:
+            if st.button(label, key=f"ethics_{idx}", use_container_width=True):
+                save_choice("ethics_choice", label)
+                st.session_state.answers["ethics_base"] = score
+                add_message(
+                    "assistant",
+                    "그 자료나 기준을 확인해서 **어떤 문제가 있는지 보고 싶은가요?** 짧게 적어주세요.",
+                )
+                set_stage(5)
 
 # ---------------------------------------------------------
 # Stage 5: 윤리적 관점 - 이유
@@ -640,15 +740,18 @@ elif st.session_state.stage == 7:
         ("표현을 조금 더 자세하게 만들어달라고 요청한다.", 0.25),
     ]
 
-    for idx, (label, score) in enumerate(shuffled_once("ai_basics", options)):
-        if st.button(label, key=f"basics_{idx}"):
-            save_choice("ai_basics_choice", label)
-            st.session_state.answers["ai_basics_base"] = score
-            add_message(
-                "assistant",
-                "혹시 이 답변에서 **확인하고 싶은 부분이나 이상하다고 느껴지는 부분**이 있다면 적어주세요.",
-            )
-            set_stage(8)
+    ordered = shuffled_once("ai_basics", options)
+    cols = st.columns(2)
+    for idx, (label, score) in enumerate(ordered):
+        with cols[idx % 2]:
+            if st.button(label, key=f"basics_{idx}", use_container_width=True):
+                save_choice("ai_basics_choice", label)
+                st.session_state.answers["ai_basics_base"] = score
+                add_message(
+                    "assistant",
+                    "혹시 이 답변에서 **확인하고 싶은 부분이나 이상하다고 느껴지는 부분**이 있다면 적어주세요.",
+                )
+                set_stage(8)
 
 # ---------------------------------------------------------
 # Stage 8: AI의 기초 - 오류 탐지
@@ -782,29 +885,39 @@ elif st.session_state.stage == 12:
         unsafe_allow_html=True,
     )
 
-    st.markdown("### 6개 역량")
+    st.markdown("### 한눈에 보는 6개 역량")
 
-    for key, label in DOMAINS.items():
-        score = float(st.session_state.scores[key])
-        st.write(f"**{label} · {score:.2f} / 2**")
-        st.progress(max(0.0, min(1.0, score / 2)))
+    domain_items = list(DOMAINS.items())
+    for row_start in range(0, 6, 3):
+        cols = st.columns(3)
+        for offset, (key, label) in enumerate(domain_items[row_start:row_start + 3]):
+            score = float(st.session_state.scores[key])
+            with cols[offset]:
+                with st.container(border=True):
+                    st.markdown(f"**{label}**")
+                    st.markdown(f'<div class="score-number">{score:.2f}</div>', unsafe_allow_html=True)
+                    st.markdown('<div class="score-label">2점 만점</div>', unsafe_allow_html=True)
+                    st.progress(max(0.0, min(1.0, score / 2)))
 
     # 강점과 우선 개선 영역
     sorted_scores = sorted(st.session_state.scores.items(), key=lambda x: x[1])
     weakest = sorted_scores[:2]
     strongest = sorted_scores[-2:][::-1]
 
-    st.markdown("### 잘하고 있는 부분")
-    for key, score in strongest:
-        st.success(f"**{DOMAINS[key]}** — 현재 진단에서 상대적으로 강하게 나타났어요.")
+    left, right = st.columns(2)
 
-    st.markdown("### 먼저 연습하면 좋은 부분")
-    for key, score in weakest:
-        st.info(f"**{DOMAINS[key]}**\n\n{DOMAIN_TIPS[key]}")
+    with left:
+        st.markdown("### 강점")
+        for key, score in strongest:
+            st.success(f"**{DOMAINS[key]}**\n\n현재 진단에서 상대적으로 강하게 나타났어요.")
 
-    with st.expander("내가 어떻게 답했는지 보기"):
+    with right:
+        st.markdown("### 우선 연습")
+        for key, score in weakest:
+            st.info(f"**{DOMAINS[key]}**\n\n{DOMAIN_TIPS[key]}")
+
+    with st.expander("내 응답 다시 보기"):
         for answer_key, answer_value in st.session_state.answers.items():
-            # 내부 채점용 값은 사용자 화면에서 제외
             if answer_key.endswith("_base") or answer_key.endswith("_score"):
                 continue
             st.write(f"**{answer_key}**")
