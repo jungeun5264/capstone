@@ -156,6 +156,11 @@ st.markdown(
         color: #6b7280;
         font-size: 0.9rem;
     }
+
+    /* 현재 질문 내부 스크롤 카드 */
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        border-radius: 16px;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -460,12 +465,31 @@ def scenario_number(stage):
 
 
 def render_chat():
+    """
+    이전 '상황'들은 접어두고,
+    현재 상황 안에서는 본 질문 → 사용자 답변 → 꼬리 질문 → 사용자 답변을
+    하나의 스크롤 가능한 카드 안에 계속 유지한다.
+    """
     messages = st.session_state.messages
     if not messages:
         return
 
-    current = messages[-1]
-    previous = messages[:-1]
+    # 가장 최근의 '### 상황' 메시지를 현재 질문의 시작점으로 사용
+    current_start = 0
+    for i, msg in enumerate(messages):
+        if msg["role"] == "assistant" and "### 상황" in msg["content"]:
+            current_start = i
+
+    previous = messages[:current_start]
+    current_thread = messages[current_start:]
+
+    # 아직 첫 상황 시작 전이라면 intro 메시지만 현재 영역에 표시
+    if current_start == 0 and not any(
+        msg["role"] == "assistant" and "### 상황" in msg["content"]
+        for msg in messages
+    ):
+        previous = []
+        current_thread = messages
 
     if previous:
         with st.expander("이전 대화 보기", expanded=False):
@@ -474,14 +498,14 @@ def render_chat():
                 with st.chat_message(msg["role"], avatar=avatar):
                     st.markdown(msg["content"])
 
-    st.markdown(
-        '<div class="current-card"><div class="current-label">AI COACH</div>',
-        unsafe_allow_html=True,
-    )
-    avatar = "🤖" if current["role"] == "assistant" else "🙂"
-    with st.chat_message(current["role"], avatar=avatar):
-        st.markdown(current["content"])
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.caption("↕ 현재 질문의 앞 내용과 꼬리 질문은 이 영역 안에서 스크롤해 다시 볼 수 있어요.")
+
+    # 현재 '한 질문(상황)' 안의 대화만 스크롤 가능
+    with st.container(height=360, border=True):
+        for msg in current_thread:
+            avatar = "🤖" if msg["role"] == "assistant" else "🙂"
+            with st.chat_message(msg["role"], avatar=avatar):
+                st.markdown(msg["content"])
 
 
 def reset_all():
