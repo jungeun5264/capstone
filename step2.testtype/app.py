@@ -52,10 +52,10 @@ html, body, [class*="css"] {{ font-family: Inter, Pretendard, -apple-system, Bli
 .scenario-summary {{ font-size:14px; line-height:1.68; color:{MUTED}; min-height:74px; margin-top:9px; }}
 .meta {{ display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }}
 .chip {{ display:inline-block; padding:5px 9px; background:#F5F6FA; color:#646A78; border-radius:999px; font-size:12px; }}
-.detail-shell {{ border:1px solid #E8E9F0; border-radius:24px; padding:28px; background:white; }}
+.detail-shell {{ border:1px solid #E8E9F0; border-radius:24px; padding:28px; background:white; color:{INK}; }}
 .detail-title {{ font-size:29px; font-weight:880; color:{INK}; letter-spacing:-.8px; line-height:1.25; }}
 .detail-summary {{ color:{MUTED}; line-height:1.7; margin-top:10px; }}
-.info-panel {{ border-radius:18px; padding:20px; background:#F7F8FC; }}
+.info-panel {{ border-radius:18px; padding:20px; background:#F7F8FC; color:{INK}; line-height:1.7; }}
 .goal-row {{ display:flex; gap:11px; align-items:flex-start; margin:11px 0; color:#333A4D; line-height:1.55; }}
 .goal-no {{ flex:0 0 auto; width:25px; height:25px; border-radius:8px; display:grid; place-items:center; font-size:12px; font-weight:800; background:#E9E7FF; color:{PRIMARY}; }}
 .workspace-head {{ display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:14px; }}
