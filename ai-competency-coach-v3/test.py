@@ -108,13 +108,37 @@ st.markdown(
         margin-bottom: 8px;
     }
 
+    /* 선택지 버튼: 긴 문장이 ... 으로 잘리지 않고 끝까지 보이도록 */
     div.stButton > button {
         width: 100%;
+        height: auto !important;
+        min-height: 72px;
         text-align: left;
         border-radius: 14px;
-        min-height: 60px;
-        white-space: normal;
-        padding: 12px 14px;
+        padding: 14px 16px;
+        white-space: normal !important;
+        overflow: visible !important;
+        align-items: center;
+    }
+
+    div.stButton > button div[data-testid="stMarkdownContainer"] {
+        width: 100%;
+        overflow: visible !important;
+    }
+
+    div.stButton > button div[data-testid="stMarkdownContainer"] p {
+        margin: 0;
+        width: 100%;
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        display: block !important;
+        -webkit-line-clamp: unset !important;
+        -webkit-box-orient: initial !important;
+        word-break: keep-all;
+        overflow-wrap: break-word;
+        line-height: 1.45;
+        text-align: left;
     }
 
     div[data-testid="stMetric"] {
