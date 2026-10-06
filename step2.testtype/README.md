@@ -1,77 +1,79 @@
-# AI 역량 훈련 프로토타입
+# AI Practice Lab v3
 
-부산 2박 3일 여행 미션을 이용해 다음 흐름을 테스트하는 Streamlit 프로토타입입니다.
+큐랩 화면을 복제하지 않고, `상황 선택 → Gemini 협업 → 3개의 파생 상황 → 최종안 작성 → 6축 분석` 흐름으로 다시 만든 테스트 버전입니다.
 
-**미션 → AI 채팅 → 제출 → 6개 역량 평가 → 육각형 레이더 차트 → 재도전 비교**
+## 1) Streamlit Cloud에서 가장 빠르게 테스트
 
-## 1. 가장 빠른 테스트: 데모 모드
+GitHub 저장소에 이 폴더의 파일을 올립니다. `app.py`가 이 폴더 안에 있다면 Streamlit Cloud의 Main file path는 예를 들어 다음처럼 지정합니다.
 
-API 키 없이 UI와 전체 흐름을 확인할 수 있습니다.
+```text
+ai_training_lab_v3/app.py
+```
+
+Streamlit Cloud의 **App settings → Secrets**에 아래를 넣습니다.
+
+```toml
+GEMINI_API_KEY = "본인의_Gemini_API_Key"
+GEMINI_MODEL = "gemini-3.8-flash"
+```
+
+`.env`나 `.streamlit/secrets.toml`을 GitHub에 업로드하지 마세요.
+
+## 2) 로컬 실행
 
 ```bash
 pip install -r requirements.txt
-streamlit run app.py
 ```
 
-웹이 열리면 왼쪽 사이드바의 **토큰 없이 데모 모드**를 켠 상태로 사용하세요.
+`.env.example`을 `.env`로 복사한 뒤 API Key를 입력합니다.
 
-데모 모드의 평가는 실제 Gemini 평가가 아니라, 특정 행동 표현을 찾아 점수를 만드는 테스트용 로직입니다.
+```env
+GEMINI_API_KEY=본인의_API_Key
+GEMINI_MODEL=gemini-3.8-flash
+```
 
-## 2. 실제 Gemini 연결
-
-1. `.env.example`을 복사해 `.env` 파일을 만듭니다.
-2. `GEMINI_API_KEY`에 본인의 Google AI Studio API 키를 입력합니다.
-3. 웹 사이드바에서 **토큰 없이 데모 모드**를 끕니다.
+그 다음:
 
 ```bash
 streamlit run app.py
 ```
 
-`.env` 예시:
+## 3) 이번 버전에서 달라진 점
 
-```env
-GEMINI_API_KEY=YOUR_KEY
-GEMINI_CHAT_MODEL=gemini-3.8-flash
-GEMINI_EVAL_MODEL=gemini-3.8-flash
+- 큐랩의 카드/레이아웃을 직접 따라가지 않는 별도 디자인
+- `훈련 시작` 시 빈 화면이 아니라 Gemini가 실제 첫 메시지와 3개의 파생 상황을 준비
+- `st.chat_input` 대신 일반 입력창+버튼을 사용해 컬럼 내부에서 채팅 입력이 사라지는 문제를 피함
+- 파생 상황은 Gemini가 매 도전 새로 생성
+- 사용자가 `새 상황 열기` 버튼으로 다음 변수를 단계적으로 받음
+- 채팅 Gemini와 평가 Gemini 역할 분리
+- 결과 화면에서 6개 역량 레이더 차트 및 이전 도전과 비교
+- API Key가 없으면 `UI 데모` 모드로 화면만 테스트 가능
+
+## 4) 테스트 순서
+
+1. 사이드바에서 `Gemini` 선택 및 연결 표시 확인
+2. 부산 여행 상황 선택
+3. `훈련 시작`
+4. Gemini에게 첫 요청 전송
+5. `새 상황 열기 (1/3)`을 눌러 파생 상황 확인
+6. 기존 계획을 수정하며 2, 3번째 상황까지 진행
+7. 오른쪽 `나의 최종안` 작성
+8. `분석하고 결과 보기`
+9. 레이더 차트와 피드백 확인
+10. `다른 조건으로 다시 도전`하여 Gemini가 새 파생 상황을 만드는지 확인
+
+## 5) 파일 구조
+
+```text
+ai_training_lab_v3/
+├─ app.py
+├─ missions.py
+├─ gemini_service.py
+├─ scoring.py
+├─ demo_mode.py
+├─ requirements.txt
+├─ .env.example
+├─ .gitignore
+└─ .streamlit/
+   └─ config.toml
 ```
-
-프로젝트에서 기존 Gemini 모델을 쓰고 있다면 모델명만 바꾸면 됩니다.
-
-## 3. 파일 역할
-
-- `app.py`: Streamlit UI, 세션 상태, 레이더 차트, 재도전 흐름
-- `gemini_service.py`: 실제 Gemini 채팅/평가 호출 및 평가 JSON schema
-- `scoring.py`: 0~4점 세부 평가를 0~100으로 환산, 종합점수/성장량 계산
-- `demo_mode.py`: API 토큰 없이 테스트하기 위한 모의 채팅/채점
-
-## 4. 6개 역량
-
-1. AI의 기초 이해
-2. AI 활용 능력
-3. 인간의 주도권
-4. 인간의 책임
-5. 윤리적 관점
-6. 안전하고 책임 있는 사용
-
-여행 미션에서는 앞의 4개를 중심으로 평가합니다. 윤리/안전은 관련 행동이 실제로 관찰된 경우에만 평가하고, 그렇지 않으면 `evaluated=false`로 처리합니다.
-
-## 5. 사전진단 페이지와 연결할 때
-
-현재 프로토타입은 사이드바에 사전진단 샘플 점수를 넣어두었습니다. 실제 서비스에서는 `DEFAULT_BASELINE` 대신 기존 사전진단 결과를 `st.session_state.baseline_profile`에 넣으면 됩니다.
-
-예:
-
-```python
-st.session_state.baseline_profile = {
-    "ai_basic": diagnosis["ai_basic"],
-    "ai_usage": diagnosis["ai_usage"],
-    "human_agency": diagnosis["human_agency"],
-    "human_responsibility": diagnosis["human_responsibility"],
-    "ethical_view": diagnosis["ethical_view"],
-    "safe_use": diagnosis["safe_use"],
-}
-```
-
-## 6. 다음 통합 포인트
-
-현재는 같은 부산 미션의 재도전까지 구현되어 있습니다. 다음 단계에서 전이 미션(예: 동아리 워크숍)을 추가한 뒤, 전이 미션에서도 성과가 유지될 때 장기 프로필을 업데이트하는 구조로 확장하면 됩니다.

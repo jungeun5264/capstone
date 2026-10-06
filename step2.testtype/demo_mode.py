@@ -1,117 +1,38 @@
 from __future__ import annotations
-
 from typing import Any, Dict, List
 
 
-def demo_assistant_reply(user_text: str, turn: int) -> str:
-    text = user_text.lower()
-    if turn == 1:
-        return (
-            "좋아요. 우선 2박 3일 부산 일정의 큰 틀을 잡아볼게요.\n\n"
-            "**1일차** 서울 출발 → 부산 도착 → 해운대/광안리 중심 관광\n"
-            "**2일차** 감천문화마을·남포동·자갈치시장 등 원도심 중심\n"
-            "**3일차** 여유 있는 브런치와 마지막 관광 후 서울 복귀\n\n"
-            "예산은 교통·숙박·식사·관광비를 나눠 계산할 수 있습니다. "
-            "정확한 날짜와 숙소 형태에 따라 실제 비용은 달라질 수 있어요."
-        )
-    if any(k in text for k in ["수정", "다시", "너무", "이동", "묶", "조정"]):
-        return (
-            "동선을 줄이는 방향으로 수정해볼게요. 첫날은 해운대권, 둘째 날은 남포동권처럼 "
-            "권역별로 묶으면 이동 부담을 줄일 수 있습니다. 원하시면 시간대별 일정과 예상 비용까지 정리할게요."
-        )
-    if any(k in text for k in ["가격", "비용", "예산", "30만", "확인", "출처", "최신"]):
-        return (
-            "예산표 형태로 정리하면 교통비·숙박비·식비·관광비를 구분하기 좋습니다. "
-            "다만 실제 KTX·숙박 가격은 날짜와 예약 시점에 따라 달라질 수 있으니 최종 예약 전에 확인이 필요합니다."
-        )
-    return (
-        "요청한 조건을 반영해서 계획을 더 구체화할 수 있어요. "
-        "원하는 지역, 음식 비중, 이동 강도, 예산 배분 중 조정하고 싶은 부분을 말씀해 주세요."
-    )
-
-
-def _has_any(text: str, words: List[str]) -> bool:
-    return any(w in text for w in words)
-
-
-def _score(condition: bool, strong_condition: bool = False, base: int = 1) -> int:
-    if strong_condition:
-        return 4
-    if condition:
-        return 3
-    return base
-
-
-def demo_evaluate(messages: List[Dict[str, str]]) -> Dict[str, Any]:
-    user_msgs = [m["content"] for m in messages if m.get("role") == "user"]
-    joined = " ".join(user_msgs).lower()
-    turns = len(user_msgs)
-
-    mentions_goal = _has_any(joined, ["부산", "여행", "일정", "계획"])
-    mentions_constraints = _has_any(joined, ["30만", "예산", "4명", "대중교통", "자동차", "2박", "3일", "서울"])
-    many_constraints = sum(w in joined for w in ["30만", "4명", "대중교통", "2박", "서울"]) >= 3
-    refinement = turns >= 2 and _has_any(joined, ["수정", "다시", "너무", "조정", "바꿔", "제외", "묶"])
-    verification = _has_any(joined, ["확인", "출처", "최신", "실제", "정확", "검증"])
-    uncertainty = _has_any(joined, ["변동", "불확실", "예상", "확정", "달라질", "확인 필요"])
-    criteria = _has_any(joined, ["우리는", "선호", "중요", "맛집", "관광", "여유", "이동", "비중"])
-    critical = _has_any(joined, ["너무", "문제", "아닌", "수정", "다시", "조정", "비효율"])
-    review = _has_any(joined, ["최종", "검토", "누락", "모순", "전체", "다시 확인"])
-
-    usage_goal = 4 if mentions_goal and mentions_constraints else (3 if mentions_goal else 1)
-    usage_context = 4 if many_constraints else (3 if mentions_constraints else 1)
-    usage_iter = 4 if refinement and turns >= 3 else (3 if refinement else (2 if turns >= 2 else 1))
-
-    result: Dict[str, Any] = {
-        "ai_basic": {
-            "evaluated": True,
-            "limitations_awareness": 4 if verification and uncertainty else (3 if verification else 1),
-            "uncertainty_awareness": 4 if uncertainty else (3 if verification else 1),
-            "appropriate_use": 3 if turns >= 2 else 2,
-            "evidence": ["가격·최신성·확인 필요성 관련 발화가 있었는지 확인했습니다."],
-            "feedback": "AI 정보의 불확실성을 행동으로 인식했는지를 중심으로 평가했습니다.",
-        },
-        "ai_usage": {
-            "evaluated": True,
-            "goal_definition": usage_goal,
-            "context_constraints": usage_context,
-            "iterative_refinement": usage_iter,
-            "evidence": [f"사용자 발화 {turns}회, 조건 제시와 후속 수정 요청 여부를 확인했습니다."],
-            "feedback": "목적·조건 전달과 결과 개선 행동을 평가했습니다.",
-        },
-        "human_agency": {
-            "evaluated": True,
-            "criteria_setting": 4 if criteria and many_constraints else (3 if criteria else 1),
-            "critical_selection": 4 if critical and turns >= 3 else (3 if critical else 1),
-            "decision_ownership": 4 if criteria and refinement else (3 if criteria else 2),
-            "evidence": ["사용자가 자신의 기준을 제시하고 AI 결과를 수정했는지 확인했습니다."],
-            "feedback": "결정 방향을 사용자가 주도했는지를 평가했습니다.",
-        },
-        "human_responsibility": {
-            "evaluated": True,
-            "verification": 4 if verification and turns >= 3 else (3 if verification else 1),
-            "uncertainty_handling": 4 if uncertainty else (3 if verification else 1),
-            "final_review": 4 if review and turns >= 3 else (3 if review else 1),
-            "evidence": ["사실·가격 확인과 최종 검토 요청 여부를 확인했습니다."],
-            "feedback": "AI 결과를 사용하기 전 확인·검토한 행동을 평가했습니다.",
-        },
-        "ethical_view": {
-            "evaluated": False,
-            "bias_fairness": 0,
-            "stakeholder_impact": 0,
-            "honest_use": 0,
-            "evidence": [],
-            "feedback": "이번 여행 미션에서는 윤리적 판단을 충분히 관찰하기 어렵습니다.",
-        },
-        "safe_use": {
-            "evaluated": False,
-            "privacy": 0,
-            "confidentiality": 0,
-            "risk_management": 0,
-            "evidence": [],
-            "feedback": "이번 여행 미션에서는 안전·보안 판단을 충분히 관찰하기 어렵습니다.",
-        },
-        "strength_feedback": "조건을 구체적으로 전달하고 AI 답변을 수정하는 행동이 나타날수록 높은 평가를 받습니다.",
-        "improvement_feedback": "AI가 제시한 가격·시간·사실 정보를 검증하고 최종 결과를 다시 검토하는 행동을 추가해보세요.",
-        "next_action": "다음 도전에서는 AI가 제시한 구체적인 사실이나 수치 중 최소 한 가지를 직접 확인 대상으로 표시해보세요.",
+def demo_plan(mission: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "opening_message": "좋아요. 이 과제를 함께 해결해볼게요. 원하는 방식으로 저에게 요청을 시작해보세요.",
+        "events": mission["fallback_events"],
     }
-    return result
+
+
+def demo_reply(user_text: str, mission: Dict[str, Any], events: List[Dict[str, str]]) -> str:
+    if events:
+        latest = events[-1]
+        return f"새 조건인 ‘{latest['situation']}’까지 반영해서 생각해볼 수 있어요. 지금 정한 우선순위를 기준으로 기존 안에서 유지할 것과 바꿀 것을 나눠볼까요?"
+    return f"좋아요. **{mission['title']}**에 맞춰 같이 정리해볼게요. 방금 말해준 기준을 바탕으로 초안을 만들거나 선택지를 비교할 수 있어요."
+
+
+def demo_evaluate(messages, final_output, events, mission):
+    user = " ".join(m["content"] for m in messages if m["role"] == "user")
+    out = " ".join(final_output.values())
+    text = user + " " + out
+    turns = sum(1 for m in messages if m["role"] == "user")
+    def has(*words): return any(w in text for w in words)
+    def b(e, vals, ev, fb): return {"evaluated": e, **vals, "evidence": ev, "feedback": fb}
+    return {
+        "ai_basic": b(True, {"limitations_awareness": 4 if has("확인","검증","출처") else 2, "uncertainty_awareness": 4 if has("최신","변동","불확실","예상") else 2, "appropriate_use": 3}, ["정보의 한계와 확인 필요성을 다룬 행동을 확인했습니다."], "AI 정보의 확실성과 한계를 구분했는지 평가했습니다."),
+        "ai_usage": b(True, {"goal_definition": 4 if has("목표","우선","기준") else 3, "context_constraints": 4 if has("예산","조건","시간") else 2, "iterative_refinement": 4 if turns >= 4 and has("수정","다시","바꿔","조정") else 3 if turns >= 2 else 2}, [f"총 {turns}회의 사용자 대화를 확인했습니다."], "조건 전달과 반복 개선 행동을 평가했습니다."),
+        "human_agency": b(True, {"criteria_setting": 4 if has("우선","기준","중요") else 2, "critical_selection": 4 if has("제외","선택","비교","수정") else 2, "decision_ownership": 4 if has("선택","결정","유지") else 2}, ["사용자가 선택 기준을 직접 세웠는지 확인했습니다."], "AI가 아니라 사용자가 방향을 결정했는지 평가했습니다."),
+        "human_responsibility": b(True, {"verification": 4 if has("확인","검증","출처") else 2, "uncertainty_handling": 4 if has("최신","변동","예상","불확실") else 2, "final_review": 4 if has("최종","점검","누락") or len(out) > 150 else 3}, ["최종 결과와 검증 관련 행동을 확인했습니다."], "최종 사용 전 확인 행동을 평가했습니다."),
+        "ethical_view": b("ethical_view" in mission["target_abilities"], {"bias_fairness": 3, "stakeholder_impact": 3, "honest_use": 3}, [], "이번 과제에서 윤리적 고려가 나타났는지 평가했습니다."),
+        "safe_use": b("safe_use" in mission["target_abilities"], {"privacy": 3, "confidentiality": 3, "risk_management": 3}, [], "민감 정보를 안전하게 다뤘는지 평가했습니다."),
+        "strength_feedback": "AI에게 단순히 답을 맡기기보다 조건을 반영하며 결과를 발전시킨 점이 좋았습니다.",
+        "improvement_feedback": "AI가 제시한 정보 중 실제 확인이 필요한 부분과 사용자가 직접 결정할 부분을 조금 더 명확히 나눠보세요.",
+        "next_action": "다음에는 AI 답변에서 확인이 필요한 정보 한 가지와 내가 직접 결정한 기준 한 가지를 명시해보세요.",
+        "event_feedback": f"공개된 {len(events)}개의 추가 상황을 기존 계획과 연결해 대응했습니다.",
+        "deliverable_feedback": "대화와 별도로 최종 결과물을 직접 정리했는지 확인했습니다.",
+    }
