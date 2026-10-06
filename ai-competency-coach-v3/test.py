@@ -897,54 +897,78 @@ elif st.session_state.stage == 9:
 # Stage 10: 활용 능력 - 수정 여부
 # ---------------------------------------------------------
 elif st.session_state.stage == 10:
-    c1, c2 = st.columns(2)
+    if st.session_state.get("result_ready", False):
+        st.success("마지막 선택까지 반영했어요.")
+        st.write("이제 지금까지의 응답을 바탕으로 6개 역량 결과를 확인할 수 있어요.")
 
-    with c1:
-        if st.button("이대로 사용하기", use_container_width=True):
-            label = "이대로 사용하기"
-            add_message("user", label)
-            st.session_state.answers["revision_decision"] = "use_as_is"
-
-            first = float(st.session_state.answers.get("initial_prompt_score", 0))
-            st.session_state.scores["utilization"] = min(2.0, first)
-
-            add_message(
-                "assistant",
-                "진단이 끝났어요. 지금까지의 사용 방식을 바탕으로 결과를 정리해볼게요.",
-            )
+        if st.button("진단 결과 보기 →", use_container_width=True):
             set_stage(12)
 
-    with c2:
-        if st.button("한 번 더 요청하기", use_container_width=True):
-            label = "한 번 더 요청하기"
-            add_message("user", label)
-            st.session_state.answers["revision_decision"] = "revise"
-            add_message(
-                "assistant",
-                "좋아요. **어떤 점을 바꾸고 싶은지 AI에게 직접 수정 요청**을 해보세요.",
-            )
-            set_stage(11)
+    else:
+        c1, c2 = st.columns(2)
+
+        with c1:
+            if st.button("이대로 사용하기", use_container_width=True):
+                label = "이대로 사용하기"
+                add_message("user", label)
+                st.session_state.answers["revision_decision"] = "use_as_is"
+
+                first = float(st.session_state.answers.get("initial_prompt_score", 0))
+                st.session_state.scores["utilization"] = min(2.0, first)
+
+                add_message(
+                    "assistant",
+                    (
+                        "좋아요. **현재 답변을 그대로 사용하겠다는 선택**까지 반영했어요.\n\n"
+                        "이제 진단 결과를 확인해볼게요."
+                    ),
+                )
+                st.session_state.result_ready = True
+                st.rerun()
+
+        with c2:
+            if st.button("한 번 더 요청하기", use_container_width=True):
+                label = "한 번 더 요청하기"
+                add_message("user", label)
+                st.session_state.answers["revision_decision"] = "revise"
+                add_message(
+                    "assistant",
+                    "좋아요. **어떤 점을 바꾸고 싶은지 AI에게 직접 수정 요청**을 해보세요.",
+                )
+                set_stage(11)
 
 # ---------------------------------------------------------
 # Stage 11: 활용 능력 - 수정 프롬프트
 # ---------------------------------------------------------
 elif st.session_state.stage == 11:
-    text = free_text_form("revision_prompt_form", "예: 부족했던 점 + 원하는 조건을 함께 적어보세요.", "수정 요청 보내기", height=110)
+    if st.session_state.get("result_ready", False):
+        st.success("수정 요청까지 반영했어요.")
+        st.write("이제 지금까지의 응답을 바탕으로 6개 역량 결과를 확인할 수 있어요.")
 
-    if text:
-        add_message("user", text)
-        st.session_state.answers["revision_prompt"] = text
+        if st.button("진단 결과 보기 →", use_container_width=True):
+            set_stage(12)
 
-        first = float(st.session_state.answers.get("initial_prompt_score", 0))
-        revision = score_revision_prompt(text)
-        st.session_state.answers["revision_prompt_score"] = revision
-        st.session_state.scores["utilization"] = min(2.0, first + revision)
+    else:
+        text = free_text_form("revision_prompt_form", "예: 부족했던 점 + 원하는 조건을 함께 적어보세요.", "수정 요청 보내기", height=110)
 
-        add_message(
-            "assistant",
-            "진단이 끝났어요. 지금까지의 사용 방식을 바탕으로 결과를 정리해볼게요.",
-        )
-        set_stage(12)
+        if text:
+            add_message("user", text)
+            st.session_state.answers["revision_prompt"] = text
+
+            first = float(st.session_state.answers.get("initial_prompt_score", 0))
+            revision = score_revision_prompt(text)
+            st.session_state.answers["revision_prompt_score"] = revision
+            st.session_state.scores["utilization"] = min(2.0, first + revision)
+
+            add_message(
+                "assistant",
+                (
+                    "좋아요. **수정 요청까지 반영했어요.**\n\n"
+                    "이제 진단 결과를 확인해볼게요."
+                ),
+            )
+            st.session_state.result_ready = True
+            st.rerun()
 
 # ---------------------------------------------------------
 # Stage 12: 결과
@@ -1016,4 +1040,3 @@ elif st.session_state.stage == 12:
 
     if st.button("처음부터 다시 진단하기", use_container_width=True):
         reset_all()
-
