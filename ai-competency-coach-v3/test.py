@@ -498,8 +498,6 @@ def render_chat():
                 with st.chat_message(msg["role"], avatar=avatar):
                     st.markdown(msg["content"])
 
-    st.caption("↕ 현재 질문의 앞 내용과 꼬리 질문은 이 영역 안에서 스크롤해 다시 볼 수 있어요.")
-
     # 현재 '한 질문(상황)' 안의 대화만 스크롤 가능
     with st.container(height=360, border=True):
         for msg in current_thread:
@@ -605,22 +603,20 @@ elif st.session_state.stage == 1:
     ]
 
     ordered = shuffled_once("agency", options)
-    cols = st.columns(2)
     for idx, (label, score) in enumerate(ordered):
-        with cols[idx % 2]:
-            if st.button(label, key=f"agency_{idx}", use_container_width=True):
-                save_choice("agency_choice", label, "agency", score)
-                add_message(
-                    "assistant",
-                    (
-                        "### 상황 2\n"
-                        "발표를 준비하던 중 AI가 이런 정보를 알려줬습니다.\n\n"
-                        "> **“2025년 조사에 따르면 대학생의 82.4%가 생성형 AI를 매일 사용합니다. "
-                        "이 조사는 UNESCO가 실시했습니다.”**\n\n"
-                        "발표 내용에 잘 맞아 보입니다. **다음으로 무엇을 하시겠어요?**"
-                    ),
-                )
-                set_stage(2)
+        if st.button(label, key=f"agency_{idx}", use_container_width=True):
+            save_choice("agency_choice", label, "agency", score)
+            add_message(
+                "assistant",
+                (
+                    "### 상황 2\n"
+                    "발표를 준비하던 중 AI가 이런 정보를 알려줬습니다.\n\n"
+                    "> **“2025년 조사에 따르면 대학생의 82.4%가 생성형 AI를 매일 사용합니다. "
+                    "이 조사는 UNESCO가 실시했습니다.”**\n\n"
+                    "발표 내용에 잘 맞아 보입니다. **다음으로 무엇을 하시겠어요?**"
+                ),
+            )
+            set_stage(2)
 
 # ---------------------------------------------------------
 # Stage 2: 인간의 책임 - 행동 선택
@@ -634,17 +630,15 @@ elif st.session_state.stage == 2:
     ]
 
     ordered = shuffled_once("responsibility", options)
-    cols = st.columns(2)
     for idx, (label, score) in enumerate(ordered):
-        with cols[idx % 2]:
-            if st.button(label, key=f"resp_{idx}", use_container_width=True):
-                save_choice("responsibility_choice", label)
-                st.session_state.answers["responsibility_base"] = score
-                add_message(
-                    "assistant",
-                    "좋아요. **확인한다면 어떤 점을 가장 확인하고 싶은지** 짧게 적어주세요.",
-                )
-                set_stage(3)
+        if st.button(label, key=f"resp_{idx}", use_container_width=True):
+            save_choice("responsibility_choice", label)
+            st.session_state.answers["responsibility_base"] = score
+            add_message(
+                "assistant",
+                "좋아요. **확인한다면 어떤 점을 가장 확인하고 싶은지** 짧게 적어주세요.",
+            )
+            set_stage(3)
 
 # ---------------------------------------------------------
 # Stage 3: 인간의 책임 - 이유
@@ -684,17 +678,15 @@ elif st.session_state.stage == 4:
     ]
 
     ordered = shuffled_once("ethics", options)
-    cols = st.columns(2)
     for idx, (label, score) in enumerate(ordered):
-        with cols[idx % 2]:
-            if st.button(label, key=f"ethics_{idx}", use_container_width=True):
-                save_choice("ethics_choice", label)
-                st.session_state.answers["ethics_base"] = score
-                add_message(
-                    "assistant",
-                    "그 자료나 기준을 확인해서 **어떤 문제가 있는지 보고 싶은가요?** 짧게 적어주세요.",
-                )
-                set_stage(5)
+        if st.button(label, key=f"ethics_{idx}", use_container_width=True):
+            save_choice("ethics_choice", label)
+            st.session_state.answers["ethics_base"] = score
+            add_message(
+                "assistant",
+                "그 자료나 기준을 확인해서 **어떤 문제가 있는지 보고 싶은가요?** 짧게 적어주세요.",
+            )
+            set_stage(5)
 
 # ---------------------------------------------------------
 # Stage 5: 윤리적 관점 - 이유
@@ -789,17 +781,15 @@ elif st.session_state.stage == 7:
     ]
 
     ordered = shuffled_once("ai_basics", options)
-    cols = st.columns(2)
     for idx, (label, score) in enumerate(ordered):
-        with cols[idx % 2]:
-            if st.button(label, key=f"basics_{idx}", use_container_width=True):
-                save_choice("ai_basics_choice", label)
-                st.session_state.answers["ai_basics_base"] = score
-                add_message(
-                    "assistant",
-                    "혹시 이 답변에서 **확인하고 싶은 부분이나 이상하다고 느껴지는 부분**이 있다면 적어주세요.",
-                )
-                set_stage(8)
+        if st.button(label, key=f"basics_{idx}", use_container_width=True):
+            save_choice("ai_basics_choice", label)
+            st.session_state.answers["ai_basics_base"] = score
+            add_message(
+                "assistant",
+                "혹시 이 답변에서 **확인하고 싶은 부분이나 이상하다고 느껴지는 부분**이 있다면 적어주세요.",
+            )
+            set_stage(8)
 
 # ---------------------------------------------------------
 # Stage 8: AI의 기초 - 오류 탐지
