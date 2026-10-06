@@ -59,11 +59,11 @@ st.markdown(
     }
 
     .current-card {
-        border: 1px solid rgba(128,128,128,.22);
-        border-radius: 18px;
-        padding: 18px 20px;
-        margin: 12px 0 14px 0;
-        background: rgba(128,128,128,.025);
+        border: 1px solid rgba(128,128,128,.18);
+        border-radius: 16px;
+        padding: 12px 14px;
+        margin: 8px 0 10px 0;
+        background: rgba(128,128,128,.018);
     }
 
     .current-label {
@@ -150,6 +150,10 @@ st.markdown(
 
     div[data-testid="stExpander"] {
         border-radius: 14px;
+    }
+
+    textarea {
+        border-radius: 12px !important;
     }
 
     .small-note {
@@ -466,28 +470,27 @@ def scenario_number(stage):
 
 def render_chat():
     """
-    이전 '상황'들은 접어두고,
-    현재 상황 안에서는 본 질문 → 사용자 답변 → 꼬리 질문 → 사용자 답변을
-    하나의 스크롤 가능한 카드 안에 계속 유지한다.
+    UX 원칙
+    1) 일반 질문은 내용만큼만 표시해서 큰 빈 네모가 생기지 않는다.
+    2) 꼬리질문 단계에서는 '앞 질문 + 내 선택'만 작은 스크롤 영역에 남긴다.
+    3) 실제 꼬리질문은 그 아래에 바로 표시해서 흐름이 끊기지 않는다.
+    4) 완료된 이전 상황들은 '이전 대화 보기'에 접어둔다.
     """
     messages = st.session_state.messages
     if not messages:
         return
 
-    # 가장 최근의 '### 상황' 메시지를 현재 질문의 시작점으로 사용
-    current_start = 0
-    for i, msg in enumerate(messages):
-        if msg["role"] == "assistant" and "### 상황" in msg["content"]:
-            current_start = i
+    # 가장 최근의 '### 상황' 메시지를 현재 상황 시작점으로 사용
+    scenario_indices = [
+        i for i, msg in enumerate(messages)
+        if msg["role"] == "assistant" and "### 상황" in msg["content"]
+    ]
 
-    previous = messages[:current_start]
-    current_thread = messages[current_start:]
-
-    # 아직 첫 상황 시작 전이라면 intro 메시지만 현재 영역에 표시
-    if current_start == 0 and not any(
-        msg["role"] == "assistant" and "### 상황" in msg["content"]
-        for msg in messages
-    ):
+    if scenario_indices:
+        current_start = scenario_indices[-1]
+        previous = messages[:current_start]
+        current_thread = messages[current_start:]
+    else:
         previous = []
         current_thread = messages
 
@@ -498,12 +501,60 @@ def render_chat():
                 with st.chat_message(msg["role"], avatar=avatar):
                     st.markdown(msg["content"])
 
-    # 현재 '한 질문(상황)' 안의 대화만 스크롤 가능
-    with st.container(height=360, border=True):
-        for msg in current_thread:
-            avatar = "🤖" if msg["role"] == "assistant" else "🙂"
-            with st.chat_message(msg["role"], avatar=avatar):
-                st.markdown(msg["content"])
+    # 꼬리질문이 나타나는 단계
+    followup_stages = {3, 5, 8, 11}
+    is_followup = st.session_state.stage in followup_stages and len(current_thread) >= 2
+
+    if is_followup:
+        # 마지막 assistant 메시지가 현재 꼬리질문.
+        # 그 이전의 질문/사용자 선택은 작은 스크롤 문맥창에 유지한다.
+        context_messages = current_thread[:-1]
+        followup_message = current_thread[-1]
+
+        if context_messages:
+            st.caption("질문 맥락")
+            with st.container(height=175, border=True):
+                for msg in context_messages:
+                    avatar = "🤖" if msg["role"] == "assistant" else "🙂"
+                    with st.chat_message(msg["role"], avatar=avatar):
+                        st.markdown(msg["content"])
+
+        avatar = "🤖" if followup_message["role"] == "assistant" else "🙂"
+        with st.chat_message(followup_message["role"], avatar=avatar):
+            st.markdown(followup_message["content"])
+
+    else:
+        # 일반 질문은 고정 height 없이 자동 높이
+        with st.container(border=True):
+            for msg in current_thread:
+                avatar = "🤖" if msg["role"] == "assistant" else "🙂"
+                with st.chat_message(msg["role"], avatar=avatar):
+                    st.markdown(msg["content"])
+
+
+def free_text_form(form_key, placeholder, button_label="답변 보내기", height=95):
+    """
+    화면 맨 아래에 고정되는 chat_input 대신
+    현재 질문 바로 아래에 입력창을 배치한다.
+    """
+    with st.form(form_key, clear_on_submit=False):
+        value = st.text_area(
+            "답변",
+            placeholder=placeholder,
+            height=height,
+            label_visibility="collapsed",
+            key=f"{form_key}_text",
+        )
+        submitted = st.form_submit_button(button_label, use_container_width=True)
+
+    if submitted:
+        cleaned = value.strip()
+        if not cleaned:
+            st.warning("답변을 입력해주세요.")
+            return None
+        return cleaned
+
+    return None
 
 
 def reset_all():
@@ -644,7 +695,7 @@ elif st.session_state.stage == 2:
 # Stage 3: 인간의 책임 - 이유
 # ---------------------------------------------------------
 elif st.session_state.stage == 3:
-    text = st.chat_input("예: 실제 조사인지, 수치가 맞는지, 원출처가 무엇인지...")
+    text = free_text_form("responsibility_followup", "예: 실제 조사인지, 수치가 맞는지, 원출처가 무엇인지...")
 
     if text:
         add_message("user", text)
@@ -692,7 +743,7 @@ elif st.session_state.stage == 4:
 # Stage 5: 윤리적 관점 - 이유
 # ---------------------------------------------------------
 elif st.session_state.stage == 5:
-    text = st.chat_input("예: 특정 집단에 불리한 기준이 들어갔는지 등")
+    text = free_text_form("ethics_followup", "예: 특정 집단에 불리한 기준이 들어갔는지 등")
 
     if text:
         add_message("user", text)
@@ -795,7 +846,7 @@ elif st.session_state.stage == 7:
 # Stage 8: AI의 기초 - 오류 탐지
 # ---------------------------------------------------------
 elif st.session_state.stage == 8:
-    text = st.chat_input("없다면 '없음'이라고 입력해도 괜찮아요.")
+    text = free_text_form("basics_followup", "없다면 '없음'이라고 입력해도 괜찮아요.")
 
     if text:
         add_message("user", text)
@@ -819,27 +870,24 @@ elif st.session_state.stage == 8:
 # Stage 9: 활용 능력 - 첫 프롬프트
 # ---------------------------------------------------------
 elif st.session_state.stage == 9:
-    text = st.chat_input("AI에게 실제로 요청하듯 작성해주세요.")
+    text = free_text_form("initial_prompt_form", "AI에게 실제로 요청하듯 작성해주세요.", "프롬프트 보내기", height=120)
 
     if text:
         add_message("user", text)
         st.session_state.answers["initial_prompt"] = text
         st.session_state.answers["initial_prompt_score"] = score_initial_prompt(text)
 
-        # 일부러 '틀리진 않지만 일반적인 답변'을 반환한다.
-        add_message(
-            "assistant",
-            (
-                "생성형 AI의 장점은 **업무 효율 향상, 정보 접근성 향상, 창의적인 아이디어 제공**입니다.\n\n"
-                "반면 한계로는 **잘못된 정보 생성, 개인정보 문제, 지나친 의존**이 있습니다.\n\n"
-                "발표에서는 이러한 장점과 한계를 균형 있게 설명하면 좋습니다."
-            ),
-        )
+        # 일부러 '틀리진 않지만 일반적인 답변'을 보여준다.
+        # 상황 7 안에 직전 AI 답변을 함께 넣어서, 사용자가 다시 찾아볼 필요가 없게 한다.
         add_message(
             "assistant",
             (
                 "### 상황 7\n"
-                "방금 받은 답변을 실제 발표 준비에 사용한다고 생각해보세요.\n\n"
+                "AI가 방금 이렇게 답했습니다.\n\n"
+                "> 생성형 AI의 장점은 **업무 효율 향상, 정보 접근성 향상, 창의적인 아이디어 제공**입니다.  \n"
+                "> 반면 한계로는 **잘못된 정보 생성, 개인정보 문제, 지나친 의존**이 있습니다.  \n"
+                "> 발표에서는 이러한 장점과 한계를 균형 있게 설명하면 좋습니다.\n\n"
+                "이 답변을 실제 발표 준비에 사용한다고 생각해보세요.\n\n"
                 "**이대로 사용하시겠어요, 아니면 AI에게 한 번 더 요청하시겠어요?**"
             ),
         )
@@ -881,7 +929,7 @@ elif st.session_state.stage == 10:
 # Stage 11: 활용 능력 - 수정 프롬프트
 # ---------------------------------------------------------
 elif st.session_state.stage == 11:
-    text = st.chat_input("예: 부족했던 점 + 원하는 조건을 함께 적어보세요.")
+    text = free_text_form("revision_prompt_form", "예: 부족했던 점 + 원하는 조건을 함께 적어보세요.", "수정 요청 보내기", height=110)
 
     if text:
         add_message("user", text)
@@ -968,3 +1016,4 @@ elif st.session_state.stage == 12:
 
     if st.button("처음부터 다시 진단하기", use_container_width=True):
         reset_all()
+
