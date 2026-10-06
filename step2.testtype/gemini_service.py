@@ -49,15 +49,22 @@ def create_training_plan(api_key: str, model: str, mission: Dict[str, Any], atte
 - 현실적이고 짧게 작성하세요.
 - opening_message는 친절하지만 과제 해결법을 선제적으로 제시하지 마세요.
 """.strip()
-    response = _client(api_key).models.generate_content(
-        model=model,
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=TrainingPlan,
-        ),
-    )
-    return json.loads(response.text)
+    # Keep the Client object alive for the entire synchronous request.
+    # Calling `_client(api_key).models...` on a temporary Client can allow
+    # the Client to be finalized/closed before the HTTP request completes.
+    client = _client(api_key)
+    try:
+        response = client.models.generate_content(
+            model=model,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=TrainingPlan,
+            ),
+        )
+        return json.loads(response.text)
+    finally:
+        client.close()
 
 
 def chat_reply(
@@ -89,12 +96,16 @@ def chat_reply(
 6. 최종 결정은 사용자 대신 단정하지 말고 선택 근거와 트레이드오프를 명확하게 제시하세요.
 7. 답변은 과도하게 길지 않게, 실제 협업 대화처럼 자연스러운 한국어로 작성하세요.
 """.strip()
-    response = _client(api_key).models.generate_content(
-        model=model,
-        contents=transcript,
-        config=types.GenerateContentConfig(system_instruction=system),
-    )
-    return response.text or ""
+    client = _client(api_key)
+    try:
+        response = client.models.generate_content(
+            model=model,
+            contents=transcript,
+            config=types.GenerateContentConfig(system_instruction=system),
+        )
+        return response.text or ""
+    finally:
+        client.close()
 
 
 def evaluate(
@@ -162,9 +173,13 @@ AI 활용 능력: 목적·맥락·조건을 전달하고 후속 대화로 결과
 아래 키 구조를 정확히 유지한 JSON만 출력하세요.
 {json.dumps(template, ensure_ascii=False)}
 """.strip()
-    response = _client(api_key).models.generate_content(
-        model=model,
-        contents=prompt,
-        config=types.GenerateContentConfig(response_mime_type="application/json"),
-    )
-    return json.loads(response.text)
+    client = _client(api_key)
+    try:
+        response = client.models.generate_content(
+            model=model,
+            contents=prompt,
+            config=types.GenerateContentConfig(response_mime_type="application/json"),
+        )
+        return json.loads(response.text)
+    finally:
+        client.close()
