@@ -1026,12 +1026,91 @@ elif st.session_state.stage == 12:
         for key, score in weakest:
             st.info(f"**{DOMAINS[key]}**\n\n{DOMAIN_TIPS[key]}")
 
-    with st.expander("내 응답 다시 보기"):
-        for answer_key, answer_value in st.session_state.answers.items():
-            if answer_key.endswith("_base") or answer_key.endswith("_score"):
+    with st.expander("내 응답 다시 보기", expanded=False):
+        answers = st.session_state.answers
+
+        response_sections = [
+            {
+                "title": "상황 1 · 발표 주제 정하기",
+                "items": [
+                    ("내 선택", answers.get("agency_choice")),
+                ],
+            },
+            {
+                "title": "상황 2 · AI가 제시한 통계 확인하기",
+                "items": [
+                    ("내 선택", answers.get("responsibility_choice")),
+                    ("내가 확인하고 싶었던 점", answers.get("responsibility_reason")),
+                ],
+            },
+            {
+                "title": "상황 3 · AI 채용 평가 살펴보기",
+                "items": [
+                    ("내 선택", answers.get("ethics_choice")),
+                    ("내가 확인하고 싶었던 문제", answers.get("ethics_reason")),
+                ],
+            },
+            {
+                "title": "상황 4 · 개인정보가 포함된 자료 다루기",
+                "items": [
+                    (
+                        "내가 제거하거나 가리기로 한 항목",
+                        ", ".join(answers.get("safety_selected", []))
+                        if isinstance(answers.get("safety_selected"), list)
+                        else answers.get("safety_selected"),
+                    ),
+                ],
+            },
+            {
+                "title": "상황 5 · AI 답변의 오류 가능성 판단하기",
+                "items": [
+                    ("내 선택", answers.get("ai_basics_choice")),
+                    ("내가 확인하고 싶었던 부분", answers.get("ai_basics_reason")),
+                ],
+            },
+            {
+                "title": "상황 6 · 실제 프롬프트 작성하기",
+                "items": [
+                    ("내가 처음 작성한 프롬프트", answers.get("initial_prompt")),
+                ],
+            },
+            {
+                "title": "상황 7 · AI 답변을 그대로 쓸지 수정할지 결정하기",
+                "items": [
+                    (
+                        "내 선택",
+                        "이대로 사용하기"
+                        if answers.get("revision_decision") == "use_as_is"
+                        else "한 번 더 요청하기"
+                        if answers.get("revision_decision") == "revise"
+                        else answers.get("revision_decision"),
+                    ),
+                    ("내가 작성한 수정 요청", answers.get("revision_prompt")),
+                ],
+            },
+        ]
+
+        for section in response_sections:
+            visible_items = [
+                (label, value)
+                for label, value in section["items"]
+                if value not in [None, "", []]
+            ]
+
+            if not visible_items:
                 continue
-            st.write(f"**{answer_key}**")
-            st.write(answer_value)
+
+            with st.container(border=True):
+                st.markdown(f"#### {section['title']}")
+
+                for label, value in visible_items:
+                    st.markdown(f"**{label}**")
+
+                    # 긴 자유응답은 인용문 형태로 보여주면 읽기 편함
+                    if isinstance(value, str) and len(value) > 70:
+                        st.markdown(f"> {value}")
+                    else:
+                        st.write(value)
 
     st.caption(
         "현재 버전은 사전진단 프로토타입입니다. 자유응답 일부는 규칙 기반으로 평가하며, "
