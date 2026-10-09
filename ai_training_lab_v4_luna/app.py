@@ -249,7 +249,10 @@ def send_message(m: Dict[str, Any]):
     if not prompt:
         return
     st.session_state.messages.append({"role": "user", "content": prompt})
-    st.session_state.draft_message = ""
+    # draft_message는 이미 이 실행에서 text_area 위젯으로 생성된 상태이므로
+    # 여기서 직접 값을 바꾸면 StreamlitWidgetAlreadyInstantiatedError가 발생한다.
+    # 다음 rerun에서 위젯이 만들어지기 전에 비우도록 플래그만 남긴다.
+    st.session_state["_clear_draft_message"] = True
     with st.spinner("Luna가 생각하고 있어요..."):
         try:
             if st.session_state.mode == "Luna":
@@ -277,6 +280,11 @@ def workspace_page():
     left, right = st.columns([1.12, .88], gap="large")
     with left:
         st.markdown('<div class="panel-title">AI와 협업하기</div>', unsafe_allow_html=True)
+        # send_message()에서 남긴 플래그를 다음 실행에서 처리한다.
+        # 반드시 text_area가 생성되기 전에 session_state 값을 변경해야 한다.
+        if st.session_state.get("_clear_draft_message", False):
+            st.session_state["draft_message"] = ""
+            st.session_state["_clear_draft_message"] = False
         with st.container(height=520, border=False):
             for msg in st.session_state.messages:
                 with st.chat_message(msg["role"]):
@@ -466,3 +474,4 @@ elif page == "detail": detail_page()
 elif page == "workspace": workspace_page()
 elif page == "result": result_page()
 else: review_page()
+
