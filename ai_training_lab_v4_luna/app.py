@@ -33,7 +33,23 @@ st.markdown(f"""
 <style>
 :root {{ --primary:{PRIMARY}; --ink:{INK}; --muted:{MUTED}; --surface:{SURFACE}; }}
 html, body, [class*="css"] {{ font-family: Inter, Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }}
+/* Streamlit Cloud/브라우저 다크테마와 커스텀 카드 색상이 충돌하지 않도록 앱 전체를 라이트 팔레트로 고정 */
+html, body, .stApp, [data-testid="stAppViewContainer"] {{ background:{SURFACE} !important; color:{INK} !important; }}
+[data-testid="stHeader"] {{ background:{SURFACE} !important; }}
+[data-testid="stMain"] {{ background:{SURFACE} !important; }}
 .block-container {{ max-width: 1440px; padding-top: 1.7rem; padding-bottom: 3rem; }}
+.stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6,
+.stApp p, .stApp li, .stApp label, .stApp span {{ color:inherit; }}
+[data-testid="stMarkdownContainer"] {{ color:{INK}; }}
+[data-testid="stMarkdownContainer"] p, [data-testid="stMarkdownContainer"] li {{ color:{INK}; }}
+[data-testid="stChatMessage"] {{ background:#FFFFFF !important; border:1px solid #E5E7EF !important; border-radius:16px !important; padding:10px 14px !important; }}
+[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"],
+[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p,
+[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] li,
+[data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] strong {{ color:{INK} !important; }}
+[data-testid="stTextArea"] textarea, [data-testid="stTextInput"] input {{ background:#FFFFFF !important; color:{INK} !important; border-color:#D9DCE6 !important; }}
+[data-testid="stTextArea"] textarea::placeholder, [data-testid="stTextInput"] input::placeholder {{ color:#9AA0AE !important; }}
+[data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p {{ color:{MUTED} !important; }}
 #MainMenu, footer {{ visibility:hidden; }}
 [data-testid="stSidebar"] {{ background:#F8F9FC; }}
 .brand {{ display:flex; align-items:center; gap:10px; margin-bottom:22px; }}
@@ -82,7 +98,7 @@ html, body, [class*="css"] {{ font-family: Inter, Pretendard, -apple-system, Bli
 .stButton > button {{ border-radius:12px; font-weight:700; min-height:42px; }}
 .stButton > button[kind="primary"] {{ background:{PRIMARY}; border-color:{PRIMARY}; }}
 div[data-testid="stTextArea"] textarea {{ border-radius:12px; }}
-div[data-testid="stChatMessage"] {{ background:#FAFAFC; border-radius:14px; padding:4px 10px; }}
+div[data-testid="stChatMessage"] {{ background:#FFFFFF !important; border-radius:16px; padding:8px 12px; }}
 @media (max-width:900px) {{ .hero {{ padding:26px; }} .hero-title {{ font-size:27px; }} }}
 </style>
 """, unsafe_allow_html=True)
@@ -474,4 +490,3 @@ elif page == "detail": detail_page()
 elif page == "workspace": workspace_page()
 elif page == "result": result_page()
 else: review_page()
-
