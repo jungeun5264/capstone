@@ -252,6 +252,20 @@ AI 활용 능력: 목적·맥락·조건을 전달하고 후속 대화로 결과
             store=False,
         )
         parsed = _parsed_or_raise(response, "역량 평가")
-        return parsed.model_dump()
+        data = parsed.model_dump()
+
+        # 미션 설계에서 지정한 역량만 이번 수행 점수로 인정한다.
+        # 관찰 기회가 애초에 없던 역량을 AI가 임의로 평가하는 일을 막는다.
+        target_keys = set(mission.get("target_abilities", []))
+        for ability_key in ABILITY_META:
+            if ability_key not in target_keys:
+                block = data.get(ability_key, {})
+                block["evaluated"] = False
+                for criterion in ABILITY_META[ability_key]["criteria"]:
+                    block[criterion] = 0
+                block["evidence"] = []
+                block["feedback"] = "이번 미션의 주요 평가 역량이 아니므로 기존 프로필 값을 유지합니다."
+                data[ability_key] = block
+        return data
     finally:
         client.close()
