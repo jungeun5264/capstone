@@ -407,15 +407,28 @@ def submit_training(m: Dict[str, Any]):
     st.rerun()
 
 
-def radar(profile: Dict[str, int], comparison: Dict[str, int] | None = None) -> go.Figure:
+def radar(
+    profile: Dict[str, int],
+    comparison: Dict[str, int] | None = None,
+    current_label: str = "이번 수행 반영 후",
+    comparison_label: str = "사전진단 프로필",
+) -> go.Figure:
     labels = [ABILITY_META[k]["label"] for k in ABILITY_ORDER]
     theta = labels + [labels[0]]
     fig = go.Figure()
     if comparison:
         vals = [comparison[k] for k in ABILITY_ORDER]
-        fig.add_trace(go.Scatterpolar(r=vals+[vals[0]], theta=theta, fill="toself", name="이전", line=dict(color="#A6A9B6", width=2), fillcolor="rgba(166,169,182,.10)"))
+        fig.add_trace(go.Scatterpolar(
+            r=vals+[vals[0]], theta=theta, fill="toself", name=comparison_label,
+            line=dict(color="#A6A9B6", width=2), fillcolor="rgba(166,169,182,.08)",
+            hovertemplate="%{theta}: %{r}점<extra>"+comparison_label+"</extra>",
+        ))
     vals = [profile[k] for k in ABILITY_ORDER]
-    fig.add_trace(go.Scatterpolar(r=vals+[vals[0]], theta=theta, fill="toself", name="현재", line=dict(color=PRIMARY, width=3), fillcolor="rgba(99,91,255,.16)"))
+    fig.add_trace(go.Scatterpolar(
+        r=vals+[vals[0]], theta=theta, fill="toself", name=current_label,
+        line=dict(color=PRIMARY, width=3), fillcolor="rgba(99,91,255,.16)",
+        hovertemplate="%{theta}: %{r}점<extra>"+current_label+"</extra>",
+    ))
     fig.update_layout(
         polar=dict(
             bgcolor="white",
@@ -423,7 +436,8 @@ def radar(profile: Dict[str, int], comparison: Dict[str, int] | None = None) -> 
             angularaxis=dict(gridcolor="#E6E8EF", tickfont=dict(size=12, color="#404657")),
         ),
         paper_bgcolor="white", plot_bgcolor="white", showlegend=True, height=500,
-        margin=dict(l=80,r=80,t=40,b=40), legend=dict(orientation="h", y=1.08, x=.02),
+        margin=dict(l=80,r=80,t=60,b=40),
+        legend=dict(orientation="h", y=1.11, x=.02, font=dict(size=12, color="#4B5262")),
     )
     return fig
 
@@ -434,26 +448,84 @@ def result_page():
     cur = hist[-1]
     prev = hist[-2] if len(hist) >= 2 else None
     render_brand()
-    st.markdown(f'<div class="section-title">{m["title"]} · 수행 분석</div><div class="section-copy">정답보다 AI를 사용한 과정에서 드러난 행동을 봅니다.</div>', unsafe_allow_html=True)
-    a,b = st.columns([.7,1.3], gap="large")
-    with a:
-        st.markdown("### 이번 수행")
-        st.markdown(f'<div class="result-score">{cur["overall"]}<span style="font-size:20px;letter-spacing:0">점</span></div>', unsafe_allow_html=True)
+
+    st.markdown(
+        f'<div class="section-title">{m["title"]} · 수행 분석</div>'
+        '<div class="section-copy">여행 계획 자체의 완성도보다, AI를 어떤 방식으로 활용했는지를 평가합니다.</div>',
+        unsafe_allow_html=True,
+    )
+
+    scores = all_ability_scores(cur["result"])
+    assessed_keys = [k for k in ABILITY_ORDER if scores[k] is not None]
+    assessed_labels = [ABILITY_META[k]["label"] for k in assessed_keys]
+
+    # 첫 도전에서는 실제 사전진단을 아직 연결하지 않았으므로 현재 프로토타입의 샘플 프로필과 비교한다.
+    if prev:
+        comparison_profile = prev["profile"]
+        comparison_label = "이전 도전"
+        current_label = "이번 도전 반영 후"
+    else:
+        comparison_profile = st.session_state.baseline
+        comparison_label = "사전진단 프로필 (현재 샘플)"
+        current_label = "이번 수행 반영 후"
+
+    top_left, top_right = st.columns([.72, 1.28], gap="large")
+    with top_left:
+        st.markdown("### 이번 수행 점수")
+        st.markdown(
+            f'<div class="result-score">{cur["overall"]}<span style="font-size:20px;letter-spacing:0">점</span></div>',
+            unsafe_allow_html=True,
+        )
         if prev:
             delta = cur["overall"] - prev["overall"]
-            st.markdown(f'<div class="result-sub">이전 도전보다 <b>{delta:+d}점</b></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="result-sub">이전 도전의 수행 점수보다 <b>{delta:+d}점</b></div>', unsafe_allow_html=True)
         else:
             st.markdown('<div class="result-sub">첫 번째 도전입니다.</div>', unsafe_allow_html=True)
+
+        st.info(
+            f"이번 점수는 **{len(assessed_keys)}개 평가 역량의 평균**입니다. "
+            "이번 미션에서 관찰하지 않은 역량은 0점으로 처리하지 않고 계산에서 제외합니다."
+        )
+        if assessed_labels:
+            st.caption("이번 미션 평가 역량 · " + " · ".join(assessed_labels))
+
         st.write("")
-        scores = all_ability_scores(cur["result"])
         for key in ABILITY_ORDER:
             label = ABILITY_META[key]["label"]
             if scores[key] is None:
-                st.caption(f"{label} · 이번 미션에서는 충분히 관찰되지 않음")
+                retained = cur["profile"][key]
+                st.markdown(
+                    f'<div style="margin:12px 0 2px;color:#9AA0AE;font-size:14px;">'
+                    f'{label} · <b>미평가</b> <span style="font-size:12px;">(프로필 {retained}점 유지)</span></div>',
+                    unsafe_allow_html=True,
+                )
             else:
                 st.progress(scores[key] / 100, text=f"{label}  {scores[key]}점")
-    with b:
-        st.plotly_chart(radar(cur["profile"], prev["profile"] if prev else st.session_state.baseline), use_container_width=True, config={"displayModeBar":False})
+
+        with st.expander("점수는 어떻게 계산되나요?"):
+            st.markdown(
+                "각 역량은 **3개의 세부 행동**을 0~4점으로 평가합니다. "
+                "세부 점수의 합을 100점 척도로 환산하고, 이번 미션에서 실제 평가된 역량만 평균해 수행 점수를 계산합니다."
+            )
+            st.code("역량 점수 = (세부점수 합 ÷ 12) × 100\n수행 점수 = 평가된 역량 점수들의 평균", language="text")
+
+    with top_right:
+        st.markdown("### 현재 AI 역량 프로필")
+        st.caption(
+            "육각형은 6개 역량의 전체 프로필입니다. 이번 미션에서 평가되지 않은 축은 이전 프로필 값을 그대로 유지합니다."
+        )
+        st.plotly_chart(
+            radar(
+                cur["profile"],
+                comparison_profile,
+                current_label=current_label,
+                comparison_label=comparison_label,
+            ),
+            use_container_width=True,
+            config={"displayModeBar":False},
+        )
+        if not prev:
+            st.caption("※ 현재 프로토타입의 회색 사전진단 값은 샘플입니다. 최종 버전에서는 실제 사전진단 6개 점수를 연결합니다.")
 
     strongest = strongest_assessed(cur["result"])
     weakest = weakest_assessed(cur["result"])
@@ -469,12 +541,13 @@ def result_page():
         growth = biggest_growth(prev["result"], cur["result"])
         if growth:
             st.success(f"가장 크게 달라진 영역: **{growth[0]} {growth[1]} → {growth[2]} ({growth[3]:+d})**")
+
     with st.expander("왜 이런 평가가 나왔는지 보기"):
         for key in ABILITY_ORDER:
             block = cur["result"].get(key, {})
             st.markdown(f"**{ABILITY_META[key]['label']}**")
             if not block.get("evaluated", False):
-                st.caption("이번 과제에서는 판단할 근거가 충분하지 않았습니다.")
+                st.caption("이번 미션의 평가 대상이 아니므로 점수를 새로 만들지 않았고, 프로필에서는 이전 값을 유지했습니다.")
                 continue
             for ev in block.get("evidence", []):
                 st.write(f"- {ev}")
@@ -493,7 +566,6 @@ def result_page():
     if c3.button("다른 상황 선택", use_container_width=True):
         st.session_state.page = "library"
         st.rerun()
-
 
 def review_page():
     m = selected_mission()
@@ -521,4 +593,3 @@ elif page == "detail": detail_page()
 elif page == "workspace": workspace_page()
 elif page == "result": result_page()
 else: review_page()
-
