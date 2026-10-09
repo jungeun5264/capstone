@@ -95,8 +95,39 @@ html, body, .stApp, [data-testid="stAppViewContainer"] {{ background:{SURFACE} !
 .feedback-label {{ font-size:12px; font-weight:850; color:{PRIMARY}; letter-spacing:.05em; }}
 .feedback-title {{ font-size:17px; font-weight:850; color:{INK}; margin:8px 0; }}
 .small-muted {{ color:{MUTED}; font-size:13px; line-height:1.6; }}
-.stButton > button {{ border-radius:12px; font-weight:700; min-height:42px; }}
-.stButton > button[kind="primary"] {{ background:{PRIMARY}; border-color:{PRIMARY}; }}
+.stButton > button {{
+  border-radius:12px !important;
+  font-weight:700 !important;
+  min-height:42px !important;
+  background:#FFFFFF !important;
+  color:{INK} !important;
+  border:1px solid #D9DCE6 !important;
+  box-shadow:none !important;
+}}
+.stButton > button * {{ color:inherit !important; }}
+.stButton > button:hover:not(:disabled) {{
+  background:#F3F4F8 !important;
+  color:{INK} !important;
+  border-color:#C9CDD8 !important;
+}}
+.stButton > button[kind="primary"] {{
+  background:{PRIMARY} !important;
+  color:#FFFFFF !important;
+  border-color:{PRIMARY} !important;
+}}
+.stButton > button[kind="primary"] * {{ color:#FFFFFF !important; }}
+.stButton > button[kind="primary"]:hover:not(:disabled) {{
+  background:#5148F5 !important;
+  color:#FFFFFF !important;
+  border-color:#5148F5 !important;
+}}
+.stButton > button:disabled {{
+  background:#E9EBF2 !important;
+  color:#8D93A3 !important;
+  border-color:#DEE1E8 !important;
+  opacity:1 !important;
+}}
+.stButton > button:disabled * {{ color:#8D93A3 !important; }}
 div[data-testid="stTextArea"] textarea {{ border-radius:12px; }}
 div[data-testid="stChatMessage"] {{ background:#FFFFFF !important; border-radius:16px; padding:8px 12px; }}
 @media (max-width:900px) {{ .hero {{ padding:26px; }} .hero-title {{ font-size:27px; }} }}
@@ -490,3 +521,4 @@ elif page == "detail": detail_page()
 elif page == "workspace": workspace_page()
 elif page == "result": result_page()
 else: review_page()
+
